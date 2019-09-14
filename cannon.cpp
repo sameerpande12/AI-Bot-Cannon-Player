@@ -48,6 +48,7 @@ class State{
         return messageToBestChild;
     }
     void updateBoard(string move){
+        cout<<"Move to make "<<move;
         if(move.length()==0)return;//the case of stalemate
         vector<string> tokens;
         int i = 0;
@@ -68,7 +69,9 @@ class State{
             }
             
         }
-
+        for(int i = 0;i<tokens.size();i++){
+            cout<<tokens[i]<<endl;
+        }
         int bx = stoi(tokens[1]);
         int by = stoi(tokens[2]);
 
@@ -741,14 +744,21 @@ class State{
     
 
 };
-void printBoard(vector<vector<char>> board){
-    for(int i = 0;board.size();i++){
-        for(int j =0 ;j<board.size();j++){
-            if(board[i][j]==' ')cout<<".  ";
-            else cout<<board[i][j]<<" ";
+void printBoard(vector<vector<char>> board,int numRows,int numCols){
+    // cout<<"began printing"<<endl;
+    // cout<<board.size()<<" "<<(board[0]).size()<<endl;
+    for(int i =0;i<numRows;i++)
+    {
+        for(int j  = 0;j<numCols;j++){
+            if(board[i][j]==' ')cout<<'.';
+            else cout<<board[i][j];
+            cout<<" ";
         }
         cout<<endl;
     }
+
+    cout<<endl<<endl;
+
 }
 int main(){
 
@@ -778,19 +788,21 @@ int main(){
         for(int j = 0;j<numCols;j+=2){
             board[i][j]='b';
         }
-        if(i==numRows-i){
-            for(int j = 0;j<numCols;j+=2){
+        if(i==numRows-1){
+            for(int j = 1;j<numCols;j+=2){
                 board[i][j]='B';   
             }
         }
 
     }
-
+    
     State current_state = State(isWhite,numRows,numCols,board);
-
+    printBoard(current_state.board,numRows,numCols);
+    
     if(isWhite){
         string myMove= current_state.generateMove();
         cout<<myMove<<endl;
+        printBoard(current_state.board,numRows,numCols);
         
     }
     while(true){
@@ -798,14 +810,18 @@ int main(){
     
         string opponentsMove;
         cin>>opponentsMove;
+        // printBoard(current_state.board,numRows,numCols);
+        cout<<"About to update board"<<endl;
         current_state.updateBoard(opponentsMove);
+        cout<<"Updated board"<<endl;
+        
 
         // if(current_state.isGameOver())
         //     break;
         
         string myMove = current_state.generateMove();
         cout<<myMove<<endl;
-
+        printBoard(current_state.board,numRows,numCols);
         // if(current_state.isGameOver())
             // break;
         
