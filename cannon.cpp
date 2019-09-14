@@ -44,34 +44,26 @@ class State{
 
         int cost = MaxVal(INT_MIN,INT_MAX,0,3);
 
-        updateBoard(messageToBestChild);
+        updateBoard(messageToBestChild,true);
         return messageToBestChild;
     }
-    void updateBoard(string move){
-        cout<<"Move to make "<<move<<endl;
+    void updateBoard(string move,bool isMyPawn){
+        // cout<<"Move to make "<<move<<endl;
         if(move.length()==0)return;//the case of stalemate
         vector<string> tokens;
-        int i = 0;
-        int j = 1;
-        while(j<move.length()){
-            
-            if(move[j]==' ' && move[j-1]!=' '){
-                tokens.push_back(move.substr(i,j));
+        string word = "";
+        for(int i =0 ;i<move.length();i++){
+            if(move[i]==' '){
+                tokens.push_back(word);
+                // cout<<"pushing:"<<word<<endl;
+                word = "";
             }
-            else if(move[j]!=' ' && move[j-1]==' '){
-                i = j;
+            else{
+                word = word + move[i];
             }
-            j++;
-            if(j==move.length()){
-                if(i<j){
-                    tokens.push_back(move.substr(i,j));
-                }
-            }
-            
         }
-        for(int i = 0;i<tokens.size();i++){
-            cout<<tokens[i]<<endl;
-        }
+        if(word.length()>0)tokens.push_back(word);
+        
         int bx = stoi(tokens[1]);
         int by = stoi(tokens[2]);
 
@@ -79,8 +71,19 @@ class State{
         int ey = stoi(tokens[5]);
 
         char type = tokens[3][0];
+        
+        // cout<<"be"<<endl;
+        // for(int i =0 ;i<5;i++)cout<<tokens[i]<<endl;
+        
         if(type=='M'){
-            board[ex][ey] = myPawn;
+            if(isMyPawn)
+                board[ex][ey] = myPawn;
+            else{
+                // cout<<"Converted position (ex,ey)=("<<ex<<","<<ey<<") from \'"<<board[ex][ey]<<"\' to ";
+                board[ex][ey] = oppPawn;
+                cout<<board[ex][ey]<<endl;
+                
+            }
             board[bx][by] = ' ';
         }
         else{
@@ -572,32 +575,30 @@ class State{
     }
     State getState(string move){
         //"S 1 2 M 4 6"
+        
+        if(move.length()==0)return State(!isWhite,numRows,numCols,board,move);//the case of stalemate
         vector<string> tokens;
-        int i = 0;
-        int j = 1;
-        while(j<move.length()){
-            
-            if(move[j]==' ' && move[j-1]!=' '){
-                tokens.push_back(move.substr(i,j));
+        string word = "";
+        for(int i =0 ;i<move.length();i++){
+            if(move[i]==' '){
+                tokens.push_back(word);
+                // cout<<"pushing:"<<word<<endl;
+                word = "";
             }
-            else if(move[j]!=' ' && move[j-1]==' '){
-                i = j;
+            else{
+                word = word + move[i];
             }
-            j++;
-            if(j==move.length()){
-                if(i<j){
-                    tokens.push_back(move.substr(i,j));
-                }
-            }
-            
         }
-
+        if(word.length()>0)tokens.push_back(word);
+        
         int bx = stoi(tokens[1]);
+        
         int by = stoi(tokens[2]);
-
+        
         int ex = stoi(tokens[4]);
+        
         int ey = stoi(tokens[5]);
-
+        
         vector<vector<char>>newBoard;
         newBoard = board;
         char type = tokens[3][0];
@@ -812,11 +813,12 @@ int main(){
 
     
         string opponentsMove;
-        cin>>opponentsMove;
+        getline(cin,opponentsMove);
         // printBoard(current_state.board,numRows,numCols);
         // cout<<"About to update board"<<endl;
         
-        // current_state.updateBoard(opponentsMove);
+        current_state.updateBoard(opponentsMove,false);
+        printBoard(current_state.board,numRows,numCols);
         // cout<<"Updated board"<<endl;
         
 
