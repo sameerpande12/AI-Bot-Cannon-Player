@@ -43,10 +43,12 @@ class State{
     string generateMove(){
 
         int cost = MaxVal(INT_MIN,INT_MAX,0,3);
+
         updateBoard(messageToBestChild);
         return messageToBestChild;
     }
     void updateBoard(string move){
+        if(move.length()==0)return;//the case of stalemate
         vector<string> tokens;
         int i = 0;
         int j = 1;
@@ -611,16 +613,39 @@ class State{
         return newState;
 
     }
+
+    int getMyTownHalls(){
+
+        int count = 0;
+        for(int i =0 ;i<board.size();i++){
+            for(int j =0 ;j<board.size();j++){
+                if(board[i][j]==myTower)count ++ ;
+            }
+        }
+        return count;
+
+    }
+    int getOppnTownHalls(){
+        
+        int count = 0;
+        for(int i =0 ;i<board.size();i++){
+            for(int j =0 ;j<board.size();j++){
+                if(board[i][j]==oppTower)count ++ ;
+            }
+        }
+        return count;
+    }
     int MaxVal(int alpha,int beta,int depth, int maxDepth){
-        if(depth>=maxDepth)utility(true);
+        if(depth>=maxDepth)return utility(true);
 
         int maxChild = INT_MIN;
         
-        
+        int neighbour_count = 0;
         for(int i = 0;i<numRows;i++){
             for(int j=0;j<numCols;j++){
                 if(board[i][j]==myPawn){
                     vector<string> neighbours = getNeighbours(i,j);
+                    neighbour_count += neighbours.size();
                     for(int iter = 0;iter< neighbours.size();iter++){
                         State newstate = getState(neighbours[iter]);
                         int child = newstate.MinVal(alpha,beta,depth+1,maxDepth);
@@ -641,25 +666,45 @@ class State{
                     
             }
         }
+
+        if(neighbour_count == 0){
+            //you should check if in the stalemate condition which has occured you win or loose
+            int myhalls = getMyTownHalls();
+            int opphalls = getOppnTownHalls();
+            if(myhalls > opphalls){
+                maxChild = INT_MAX-1;
+                return INT_MAX-1;//since a stalemate condition
+            }
+            else if(myhalls == opphalls){
+                maxChild = INT_MAX-2;
+                return INT_MAX - 2;//since worse than a stalemate
+            }
+            else{
+                maxChild = INT_MIN;
+                return INT_MIN; 
+            } 
+        }
         return maxChild;
             
     }
 
     int MinVal(int alpha,int beta, int depth,int maxDepth){
-        if(depth>=maxDepth)utility(false);
+        if(depth>=maxDepth)return utility(false);
 
         vector<vector<char>> tempBoard;
         tempBoard = board;
 
         int minChild = INT_MAX;
 
-
+        int neighbour_count = 0;
         for(int i = 0;i<numRows;i++){
             for(int j=0;j<numCols;j++){
                 if(board[i][j]==myPawn){
                     vector<string> neighbours = getNeighbours(i,j);
+                    neighbour_count += neighbours.size();
                     for(int iter = 0;iter< neighbours.size();iter++){
                         State newstate = getState(neighbours[iter]);
+                        
                         int child = newstate.MaxVal(alpha,beta,depth+1,maxDepth);
                         if(beta<child){
                             beta = child;
@@ -676,7 +721,25 @@ class State{
                     
             }
         }
+
+        if(neighbour_count==0){//since it is minval the utility of the opposition is actually the required utility
+            int myhalls = getMyTownHalls();
+            int opphalls = getOppnTownHalls();
+            if(myhalls < opphalls){
+                minChild = INT_MAX-1;
+                return INT_MAX-1;//since a stalemate condition
+            }
+            else if(myhalls == opphalls){
+                minChild = INT_MAX-2;
+                return INT_MAX - 2;//since worse than a stalemate
+            }
+            else{
+                minChild = INT_MIN;
+                return INT_MIN; 
+            
+        }
         return minChild;
+        }
     }
     
 
@@ -740,14 +803,14 @@ int main(){
         cin>>opponentsMove;
         current_state.updateBoard(opponentsMove);
 
-        if(current_state.isGameOver())
-            break;
+        // if(current_state.isGameOver())
+        //     break;
         
         string myMove = current_state.generateMove();
         cout<<myMove<<endl;
 
-        if(current_state.isGameOver())
-            break;
+        // if(current_state.isGameOver())
+            // break;
         
     }
     
