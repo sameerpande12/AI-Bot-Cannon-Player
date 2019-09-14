@@ -86,9 +86,6 @@ class State{
 
     }
 
-    bool isGameOver(){
-
-    }
 
     vector<string> getNeighbours(int i , int j){
                 vector<string> neighbours;
@@ -794,7 +791,7 @@ int main(){
     if(isWhite){
         string myMove= current_state.generateMove();
         cout<<myMove<<endl;
-        if(current_state.isGameOver())return 0;
+        
     }
     while(true){
 
