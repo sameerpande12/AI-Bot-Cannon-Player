@@ -48,7 +48,7 @@ class State{
         return messageToBestChild;
     }
     void updateBoard(string move){
-        cout<<"Move to make "<<move;
+        cout<<"Move to make "<<move<<endl;
         if(move.length()==0)return;//the case of stalemate
         vector<string> tokens;
         int i = 0;
@@ -641,6 +641,7 @@ class State{
         int maxChild = INT_MIN;
         
         int neighbour_count = 0;
+        messageToBestChild = "";//make sure that you don't effect future moves when you have stalemate
         for(int i = 0;i<numRows;i++){
             for(int j=0;j<numCols;j++){
                 if(board[i][j]==myPawn){
@@ -669,6 +670,7 @@ class State{
 
         if(neighbour_count == 0){
             //you should check if in the stalemate condition which has occured you win or loose
+            messageToBestChild = "";//make sure that you don't effect future moves when you have stalemate
             int myhalls = getMyTownHalls();
             int opphalls = getOppnTownHalls();
             if(myhalls > opphalls){
@@ -695,7 +697,7 @@ class State{
         tempBoard = board;
 
         int minChild = INT_MAX;
-
+        messageToBestChild = "";//make sure that you don't effect future moves when you have stalemate
         int neighbour_count = 0;
         for(int i = 0;i<numRows;i++){
             for(int j=0;j<numCols;j++){
@@ -723,6 +725,7 @@ class State{
         }
 
         if(neighbour_count==0){//since it is minval the utility of the opposition is actually the required utility
+            messageToBestChild = "";//make sure that you don't effect future moves when you have stalemate  
             int myhalls = getMyTownHalls();
             int opphalls = getOppnTownHalls();
             if(myhalls < opphalls){
@@ -811,9 +814,10 @@ int main(){
         string opponentsMove;
         cin>>opponentsMove;
         // printBoard(current_state.board,numRows,numCols);
-        cout<<"About to update board"<<endl;
-        current_state.updateBoard(opponentsMove);
-        cout<<"Updated board"<<endl;
+        // cout<<"About to update board"<<endl;
+        
+        // current_state.updateBoard(opponentsMove);
+        // cout<<"Updated board"<<endl;
         
 
         // if(current_state.isGameOver())
