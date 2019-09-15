@@ -197,7 +197,7 @@ class State{
                                     w      w
                                 */
 
-                                if(tempBoard[i+1][j+1] == tempBoard[i][j]==tempBoard[i-1][j-1]){
+                                if( (tempBoard[i+1][j+1] == tempBoard[i][j]) && (tempBoard[i][j]==tempBoard[i-1][j-1])){
 
                                     if(  i+3 <numRows && j+3 <numCols){
                                         if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3]!=myPawn && tempBoard[i+3][j+3]!=myTower){
@@ -251,7 +251,7 @@ class State{
 
                                 }
 
-                                if(tempBoard[i-1][j+1]==tempBoard[i][j] == tempBoard[i+1][j-1]){
+                                if( (tempBoard[i-1][j+1]==tempBoard[i][j]) && ( tempBoard[i][j]== tempBoard[i+1][j-1])){
                                     if(i-3 >=0 && j+3 < numCols){
                                         if(tempBoard[i-2][j+2]==' ' && tempBoard[i-3][j+3]!=myPawn && tempBoard[i-3][j+3]!=myTower ){
                                             //shot
@@ -298,7 +298,7 @@ class State{
 
                             }
 
-                            if(tempBoard[i][j]==tempBoard[i+1][j]==tempBoard[i-1][j]){
+                            if((tempBoard[i][j]==tempBoard[i+1][j]) && (tempBoard[i][j] ==tempBoard[i-1][j])){
                                 /*
                                 w
                                 w
@@ -351,7 +351,7 @@ class State{
                         if(j-1>=0 && j+1 <numCols){
 
                             //  w w w 
-                            if(tempBoard[i][j-1]==tempBoard[i][j]==tempBoard[i][j+1]){
+                            if((tempBoard[i][j-1]==tempBoard[i][j] ) && (tempBoard[i][j]==tempBoard[i][j+1])){
 
                                 if(j-3>=0 ){
                                     //shot
@@ -484,12 +484,12 @@ class State{
                         if( i+1 < numRows && i-1 >=0){
                             if( j-1 >=0 && j+1 < numCols ){
                                 /*
-                                w    O     w
-                                    w   R    w
+                                w     O       w
+                                  w   R     w
                                     w      w
                                 */
 
-                                if(tempBoard[i+1][j+1] == tempBoard[i][j]==tempBoard[i-1][j-1]){
+                                if((tempBoard[i+1][j+1] == tempBoard[i][j]) &&   (tempBoard[i][j]==tempBoard[i-1][j-1])){
 
                                     if(  i+3 <numRows && j+3 <numCols){
                                         if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3]!=myPawn && tempBoard[i+3][j+3]!=myTower){
@@ -543,7 +543,7 @@ class State{
 
                                 }
 
-                                if(tempBoard[i-1][j+1]==tempBoard[i][j] == tempBoard[i+1][j-1]){
+                                if((tempBoard[i-1][j+1]==tempBoard[i][j])  && (tempBoard[i][j]== tempBoard[i+1][j-1])){
                                     if(i-3 >=0 && j+3 < numCols){
                                         if(tempBoard[i-2][j+2]==' ' && tempBoard[i-3][j+3]!=myPawn && tempBoard[i-3][j+3]!=myTower ){
                                             //shot
@@ -590,7 +590,7 @@ class State{
 
                             }
 
-                            if(tempBoard[i][j]==tempBoard[i+1][j]==tempBoard[i-1][j]){
+                            if((tempBoard[i][j]==tempBoard[i+1][j]) && (tempBoard[i][j]==tempBoard[i-1][j])){
                                 /*
                                 w
                                 w
@@ -643,7 +643,7 @@ class State{
                         if(j-1>=0 && j+1 <numCols){
 
                             //  w w w 
-                            if(tempBoard[i][j-1]==tempBoard[i][j]==tempBoard[i][j+1]){
+                            if((tempBoard[i][j-1]==tempBoard[i][j]) && (tempBoard[i][j] ==tempBoard[i][j+1])){
 
                                 if(j-3>=0 ){
                                     //shot
