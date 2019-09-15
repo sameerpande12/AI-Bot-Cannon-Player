@@ -7,7 +7,17 @@
 #include <sstream> 
 using namespace std;
 
+int w_townhalls = 8;
+int w_blocked = 3;
+int w_vulnerable = -3;
 
+int w_pawns = 2;
+int w_pawn_moves = 1;
+int w_pawn_kills = 6;
+int w_town_kills = 100;
+int w_cannon = 4;
+int w_pawn_shot = 6;
+int w_town_shot = 100;
 
 class State{
 
@@ -49,7 +59,7 @@ class State{
 
     string generateMove(){
         
-        int cost = MaxVal(INT_MIN,INT_MAX,0,3);
+        int cost = MaxVal(INT_MIN,INT_MAX,0,1);
         updateBoard(messageToBestChild,true);
         return messageToBestChild;
     }
@@ -696,23 +706,39 @@ class State{
 
     vector<int> TownAndExposedTown(bool Mine)
     {
-        int exposed = 0;
+        int blocked = 0;
+        int vulnerable = 0;
         int townHalls = 0;
-        if(Mine){
+        if((Mine && myPawn == 'w') || (!Mine && myPawn == 'b'))
+        {
             for(int j=0;j<numCols;j++){
-                if(j%2 == 1){
-                    if(board[board.size()-1][j] == myTower){
+                if(j%2 == 0){
+                    if(board[0][j] == 'W'){
                         townHalls++;
-                        if(j-1 >=0 && board[board.size()-1][j-1] == ' ')
-                            exposed++;
-                        if(j+1 <board.size() && board[board.size()-1][j+1] == ' ')
-                            exposed++;
-                        if(j-1 >=0 && board[board.size()-2][j-1] == ' ')
-                            exposed++;
-                        if(board[board.size()-2][j] == ' ')
-                            exposed++;
-                        if(j+1 <board.size() && board[board.size()-2][j+1] == ' ')
-                            exposed++;
+                        if(j-1 >=0 && board[board.size()-1][j-1] == 'w')
+                            blocked++;
+                        else if(j-1 >=0 && board[board.size()-1][j-1] == 'b')
+                            vulnerable++;
+
+                        if(j+1 <board.size() && board[board.size()-1][j+1] == 'w')
+                            blocked++;
+                        else if(j+1 <board.size() && board[board.size()-1][j+1] == 'b')
+                            vulnerable++;
+
+                        if(j-1 >=0 && board[board.size()-2][j-1] == 'w')
+                            blocked++;
+                        else if(j-1 >=0 && board[board.size()-2][j-1] == 'b')
+                            vulnerable++;
+
+                        if(board[board.size()-2][j] == 'w')
+                            blocked++;
+                        else if(board[board.size()-2][j] == 'b')
+                            vulnerable++;
+
+                        if(j+1 <board.size() && board[board.size()-2][j+1] == 'w')
+                            blocked++;
+                        else if(j+1 <board.size() && board[board.size()-2][j+1] == 'b')
+                            vulnerable++;
                     }
                 }
             }
@@ -720,27 +746,41 @@ class State{
         }
         else{
             for(int j=0;j<numCols;j++){
-                if(j%2 == 0){
-                    if(board[0][j] == oppTower){
+                if(j%2 == 1){
+                    if(board[0][j] == 'B'){
                         townHalls++;
-                        if(j-1 >=0 && board[0][j-1] == ' ')
-                            exposed++;
-                        if(j+1 <board.size() && board[0][j+1] == ' ')
-                            exposed++;
-                        if(j-1 >=0 && board[1][j-1] == ' ')
-                            exposed++;
-                        if(board[1][j] == ' ')
-                            exposed++;
-                        if(j+1 <board.size() && board[1][j+1] == ' ')
-                            exposed++;
+                        if(j-1 >=0 && board[0][j-1] == 'b')
+                            blocked++;
+                        else if(j-1 >=0 && board[0][j-1] == 'w')
+                            vulnerable++;
+
+                        if(j+1 <board.size() && board[0][j+1] == 'b')
+                            blocked++;
+                        else if(j+1 <board.size() && board[0][j+1] == 'w')
+                            vulnerable++;
+
+                        if(j-1 >=0 && board[1][j-1] == 'b')
+                            blocked++;
+                        else if(j-1 >=0 && board[1][j-1] == 'w')
+                            vulnerable++;
+
+                        if(board[1][j] == 'b')
+                            blocked++;
+                        else if(board[1][j] == 'w')
+                            vulnerable++;
+
+                        if(j+1 <board.size() && board[1][j+1] == 'b')
+                            blocked++;
+                        else if(j+1 <board.size() && board[1][j+1] == 'w')
+                            vulnerable++;
                     }
                 }
             }
-
         }
         vector<int> value;
         value.push_back(townHalls);
-        value.push_back(exposed);
+        value.push_back(blocked);
+        value.push_back(vulnerable);
         return value;
     }
 
@@ -749,103 +789,469 @@ class State{
         int pawn = 0;
         int freedom = 0;
         int kill = 0;
+        int townkill = 0;
         bool surround = false;
-        
-        for(int i = 0;i<board.size();i++)
-        {
-            for(int j = 0;j<board[0].size();j++)
+        int cannon = 0;
+        int pawn_shot = 0;
+        int town_shot = 0;
+
+        if((Mine && myPawn == 'w') || (!Mine && myPawn == 'b')){
+            for(int i = 0;i<board.size();i++)
             {
-                if(Mine){
-                    if(board[i][j] == myPawn)
+                for(int j = 0;j<board[0].size();j++)
+                {
+                    if(board[i][j] == 'w')
                     {
                         pawn++;
-                        if(j-1>=0 && board[i][j-1] == oppPawn)
-                            kill++;
-                        else if(j-1>=0 && board[i][j-1] == ' ')
-                            freedom++;
-                        if(j+1 < board.size() && board[i][j+1] == oppPawn)
-                            kill++;
-                        else if(j+1 < board.size() && board[i][j+1] == ' ')
-                            freedom++;
-                        
-                        if(j-1 >=0 && i-1 >= 0 && board[i-1][j-1] == ' ')
-                            freedom++;
-                        if(j+1 < board.size() && i-1 >= 0 && board[i-1][j+1] == ' ')
-                            freedom++;
-                        if(i-1 >= 0 && board[i-1][j] == ' ')
-                            freedom++;
-                        
-                        if(j-1 >=0 && i-1 >= 0 && board[i-1][j-1] == oppPawn)
-                            surround = true;
-                        if(j+1 < board.size() && i-1 >= 0 && board[i-1][j+1] == oppPawn)
-                            surround = true;
-                        if(i-1 >= 0 && board[i-1][j] == oppPawn)
-                            surround = true;
-                        if(surround == true || kill == true)
-                        {
-                            if(i+2 <board.size())
-                            {
-                                if(j-2 >= 0){
-                                    if(board[i+2][j-2] == ' ')
-                                        freedom++;
-                                    else if(board[i+2][j-2] == oppPawn)
-                                        kill++;
-                                }
-                                if(j+2 <board.size()){
-                                    if(board[i+2][j+2] == ' ')
-                                            freedom++;
-                                    else if(board[i+2][j+2] == oppPawn)
-                                        kill++;
-                                }
+                        if(j-1>=0){
+                            if(board[i][j-1] == 'b'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i][j-1] == 'B'){
+                                surround = true;
+                                townkill++;
+                            }
+                        } 
+ 
+                        if(j+1 < board.size()){ 
+                            if(board[i][j+1] == 'b'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i][j+1] == 'B'){
+                                surround = true;
+                                townkill++;
                             }
                         }
-                    }
-                }
-                else
-                {
-                    if(board[i][j] == oppPawn)
-                    {
-                        pawn++;
-                        if(j-1>=0 && board[i][j-1] == myPawn)
-                            kill++;
-                        else if(j-1>=0 && board[i][j-1] == ' ')
-                            freedom++;
-                        if(j+1 < board.size() && board[i][j+1] == myPawn)
-                            kill++;
-                        else if(j+1 < board.size() && board[i][j+1] == ' ')
-                            freedom++;
                         
-                        if(j-1 >=0 && i+1 <board.size() && board[i+1][j-1] == ' ')
-                            freedom++;
-                        if(j+1 < board.size() && i+1 <board.size() && board[i+1][j+1] == ' ')
-                            freedom++;
-                        if(i+1 <board.size() && board[i+1][j] == ' ')
-                            freedom++;
+                        if(j-1 >=0 && i+1 <board.size()){
+                            if(board[i+1][j-1] == 'b'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i+1][j-1] == 'B'){
+                                surround = true;
+                                townkill++;
+                            }
+                            else if(board[i+1][j-1] == ' ')
+                                freedom++;
+                        }
+                        if(i+1 <board.size()){
+                            if(board[i+1][j] == 'b'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i+1][j] == 'B'){
+                                surround = true;
+                                townkill++;
+                            }
+                            else if(board[i+1][j] == ' ')
+                                freedom++;
+                        }
+                        if(j+1 < board.size() && i+1 <board.size()){
+                            if(board[i+1][j+1] == 'b'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i+1][j+1] == 'B'){
+                                surround = true;
+                                townkill++;
+                            }
+                            else if(board[i+1][j+1] == ' ')
+                                freedom++;
+                        }
+
                         
-                        if(j-1 >=0 && i+1 <board.size() && board[i+1][j-1] == myPawn)
-                            surround = true;
-                        if(j+1 < board.size() && i+1 <board.size() && board[i+1][j+1] == myPawn)
-                            surround = true;
-                        if(i+1 <board.size() && board[i+1][j] == myPawn)
-                            surround = true;
-                        if(surround == true || kill == true)
+                        if(surround == true)
                         {
                             if(i-2 >=0)
                             {
                                 if(j-2 >= 0){
                                     if(board[i-2][j-2] == ' ')
                                         freedom++;
-                                    else if(board[i-2][j-2] == myPawn)
+                                    else if(board[i-2][j-2] == 'w')
                                         kill++;
                                 }
                                 if(j+2 <board.size()){
                                     if(board[i-2][j+2] == ' ')
-                                            freedom++;
-                                    else if(board[i-2][j+2] == myPawn)
+                                        freedom++;
+                                    else if(board[i-2][j+2] == 'w')
                                         kill++;
                                 }
                             }
                         }
+                        if(j+1 < board.size() && j-1 >=0)
+                            if(board[i][j+1] == 'w')
+                                if(board[i][j-1] == 'w'){
+                                    cannon++;
+                                    if(j-3 >= 0 && board[i][j-2] != ' ')
+                                    {
+                                        
+                                        if(board[i][j-3] == 'b')
+                                            pawn_shot++;
+                                        if(board[i][j-3] == 'B')
+                                            town_shot++;
+                                        if(j-4 >= 0 && board[i][j-3] == ' ')
+                                        {
+                                            if(board[i][j-4] == 'b')
+                                                pawn_shot++;
+                                            if(board[i][j-4] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(j+3 < board.size() && board[i][j+2] != ' ')
+                                    {
+                                        
+                                        if(board[i][j+3] == 'b')
+                                            pawn_shot++;
+                                        if(board[i][j+3] == 'B')
+                                            town_shot++;
+                                        if(j+4 < board.size() && board[i][j+3] == ' ')
+                                        {
+                                            if(board[i][j+4] == 'b')
+                                                pawn_shot++;
+                                            if(board[i][j+4] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                        if(i+1 < board.size() && i-1 >=0)
+                            if(board[i+1][j] == 'w')
+                                if(board[i-1][j] == 'w'){
+                                    cannon++;
+                                    if(i-3 >= 0 && board[i-2][j] != ' ')
+                                    {
+                                        
+                                        if(board[i-3][j] == 'b')
+                                            pawn_shot++;
+                                        if(board[i-3][j] == 'B')
+                                            town_shot++;
+                                        if(i-4 >=0 && board[i-3][j] == ' ')
+                                        {
+                                            if(board[i-4][j] == 'b')
+                                                pawn_shot++;
+                                            if(board[i-4][j] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(i+3 < board.size() && board[i+2][j] != ' ')
+                                    {
+                                        
+                                        if(board[i+3][j] == 'b')
+                                            pawn_shot++;
+                                        if(board[i+3][j] == 'B')
+                                            town_shot++;
+                                        if(i+4 < board.size() && board[i+3][j] == ' ')
+                                        {
+                                            if(board[i+4][j] == 'b')
+                                                pawn_shot++;
+                                            if(board[i+4][j] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                        if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
+                            if(board[i-1][j+1] == 'w')
+                                if(board[i+1][j-1] == 'w'){
+                                    cannon++;
+                                    if(i-3 >= 0 && j+3 < board.size() && board[i-2][j+2] != ' ')
+                                    {
+                                        
+                                        if(board[i-3][j+3] == 'b')
+                                            pawn_shot++;
+                                        if(board[i-3][j+3] == 'B')
+                                            town_shot++;
+                                        if(i-4 >= 0 && j+4 < board.size() && board[i-3][j+3] == ' ')
+                                        {
+                                            if(board[i-4][j+4] == 'b')
+                                                pawn_shot++;
+                                            if(board[i-4][j+4] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(j-3 >= 0 && i+3 < board.size() && board[i+2][j-2] != ' ')
+                                    {
+                                        
+                                        if(board[i+3][j-3] == 'b')
+                                            pawn_shot++;
+                                        if(board[i+3][j-3] == 'B')
+                                            town_shot++;
+                                        if(j-4 >= 0 && i+4 < board.size() && board[i+3][j-3] == ' ')
+                                        {
+                                            if(board[i+4][j-4] == 'b')
+                                                pawn_shot++;
+                                            if(board[i+4][j-4] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                        if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
+                            if(board[i-1][j-1] == 'w')
+                                if(board[i+1][j+1] == 'w'){
+                                    cannon++;
+                                    if(i+3 < board.size() && j+3 < board.size() && board[i+2][j+2] != ' ')
+                                    {
+                                        
+                                        if(board[i+3][j+3] == 'b')
+                                            pawn_shot++;
+                                        if(board[i+3][j+3] == 'B')
+                                            town_shot++;
+                                        if(i+4 < board.size() && j+4 < board.size() && board[i+3][j+3] == ' ')
+                                        {
+                                            if(board[i+4][j+4] == 'b')
+                                                pawn_shot++;
+                                            if(board[i+4][j+4] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(i-3 >=0 && j-3 >=0 && board[i-2][j-2] != ' ')
+                                    {
+                                        
+                                        if(board[i-3][j-3] == 'b')
+                                            pawn_shot++;
+                                        if(board[i-3][j-3] == 'B')
+                                            town_shot++;
+                                        if(i-4 >=0 && j-4 >=0 && board[i-3][j-3] == ' ')
+                                        {
+                                            if(board[i-4][j-4] == 'b')
+                                                pawn_shot++;
+                                            if(board[i-4][j-4] == 'B')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                    }
+                }
+            }
+        }
+        if((Mine && myPawn == 'w') || (!Mine && myPawn == 'b')){
+            for(int i = 0;i<board.size();i++)
+            {
+                for(int j = 0;j<board[0].size();j++)
+                {
+                    if(board[i][j] == 'b')
+                    {
+                        pawn++;
+                        if(j-1>=0){
+                            if(board[i][j-1] == 'w'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i][j-1] == 'W'){
+                                surround = true;
+                                townkill++;
+                            }
+                        } 
+ 
+                        if(j+1 < board.size()){ 
+                            if(board[i][j+1] == 'w'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i][j+1] == 'W'){
+                                surround = true;
+                                townkill++;
+                            }
+                        }
+                        
+                        if(j-1 >=0 && i-1 >=0){
+                            if(board[i-1][j-1] == 'w'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i-1][j-1] == 'W'){
+                                surround = true;
+                                townkill++;
+                            }
+                            else if(board[i-1][j-1] == ' ')
+                                freedom++;
+                        }
+                        if(i-1 >=0){
+                            if(board[i-1][j] == 'w'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i-1][j] == 'W'){
+                                surround = true;
+                                townkill++;
+                            }
+                            else if(board[i-1][j] == ' ')
+                                freedom++;
+                        }
+                        if(j+1 < board.size() && i-1 >=0){
+                            if(board[i-1][j+1] == 'w'){
+                                surround = true;
+                                kill++;
+                            }
+                            else if(board[i-1][j+1] == 'W'){
+                                surround = true;
+                                townkill++;
+                            }
+                            else if(board[i-1][j+1] == ' ')
+                                freedom++;
+                        }
+
+                        
+                        if(surround == true)
+                        {
+                            if(i+2 <board.size())
+                            {
+                                if(j-2 >= 0){
+                                    if(board[i+2][j-2] == ' ')
+                                        freedom++;
+                                    else if(board[i+2][j-2] == 'b')
+                                        kill++;
+                                }
+                                if(j+2 <board.size()){
+                                    if(board[i+2][j+2] == ' ')
+                                        freedom++;
+                                    else if(board[i+2][j+2] == 'b')
+                                        kill++;
+                                }
+                            }
+                        }
+
+                        if(j+1 < board.size() && j-1 >=0)
+                            if(board[i][j+1] == 'b')
+                                if(board[i][j-1] == 'b'){
+                                    cannon++;
+                                    if(j-3 >= 0 && board[i][j-2] != ' ')
+                                    {
+                                        
+                                        if(board[i][j-3] == 'w')
+                                            pawn_shot++;
+                                        if(board[i][j-3] == 'W')
+                                            town_shot++;
+                                        if(j-4 >= 0 && board[i][j-3] == ' ')
+                                        {
+                                            if(board[i][j-4] == 'w')
+                                                pawn_shot++;
+                                            if(board[i][j-4] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(j+3 < board.size() && board[i][j+2] != ' ')
+                                    {
+                                        
+                                        if(board[i][j+3] == 'w')
+                                            pawn_shot++;
+                                        if(board[i][j+3] == 'W')
+                                            town_shot++;
+                                        if(j+4 < board.size() && board[i][j+3] == ' ')
+                                        {
+                                            if(board[i][j+4] == 'w')
+                                                pawn_shot++;
+                                            if(board[i][j+4] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                        if(i+1 < board.size() && i-1 >=0)
+                            if(board[i+1][j] == 'b')
+                                if(board[i-1][j] == 'b'){
+                                    cannon++;
+                                    if(i-3 >= 0 && board[i-2][j] != ' ')
+                                    {
+                                        
+                                        if(board[i-3][j] == 'w')
+                                            pawn_shot++;
+                                        if(board[i-3][j] == 'W')
+                                            town_shot++;
+                                        if(i-4 >=0 && board[i-3][j] == ' ')
+                                        {
+                                            if(board[i-4][j] == 'w')
+                                                pawn_shot++;
+                                            if(board[i-4][j] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(i+3 < board.size() && board[i+2][j] != ' ')
+                                    {
+                                        
+                                        if(board[i+3][j] == 'w')
+                                            pawn_shot++;
+                                        if(board[i+3][j] == 'W')
+                                            town_shot++;
+                                        if(i+4 < board.size() && board[i+3][j] == ' ')
+                                        {
+                                            if(board[i+4][j] == 'w')
+                                                pawn_shot++;
+                                            if(board[i+4][j] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                        if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
+                            if(board[i-1][j+1] == 'b')
+                                if(board[i+1][j-1] == 'b'){
+                                    cannon++;
+                                    if(i-3 >= 0 && j+3 < board.size() && board[i-2][j+2] != ' ')
+                                    {
+                                        
+                                        if(board[i-3][j+3] == 'w')
+                                            pawn_shot++;
+                                        if(board[i-3][j+3] == 'W')
+                                            town_shot++;
+                                        if(i-4 >= 0 && j+4 < board.size() && board[i-3][j+3] == ' ')
+                                        {
+                                            if(board[i-4][j+4] == 'w')
+                                                pawn_shot++;
+                                            if(board[i-4][j+4] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(j-3 >= 0 && i+3 < board.size() && board[i+2][j-2] != ' ')
+                                    {
+                                        
+                                        if(board[i+3][j-3] == 'w')
+                                            pawn_shot++;
+                                        if(board[i+3][j-3] == 'W')
+                                            town_shot++;
+                                        if(j-4 >= 0 && i+4 < board.size() && board[i+3][j-3] == ' ')
+                                        {
+                                            if(board[i+4][j-4] == 'w')
+                                                pawn_shot++;
+                                            if(board[i+4][j-4] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
+                        if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
+                            if(board[i-1][j-1] == 'b')
+                                if(board[i+1][j+1] == 'b'){
+                                    cannon++;
+                                    if(i+3 < board.size() && j+3 < board.size() && board[i+2][j+2] != ' ')
+                                    {
+                                        
+                                        if(board[i+3][j+3] == 'w')
+                                            pawn_shot++;
+                                        if(board[i+3][j+3] == 'W')
+                                            town_shot++;
+                                        if(i+4 < board.size() && j+4 < board.size() && board[i+3][j+3] == ' ')
+                                        {
+                                            if(board[i+4][j+4] == 'w')
+                                                pawn_shot++;
+                                            if(board[i+4][j+4] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                    if(i-3 >=0 && j-3 >=0 && board[i-2][j-2] != ' ')
+                                    {
+                                        
+                                        if(board[i-3][j-3] == 'w')
+                                            pawn_shot++;
+                                        if(board[i-3][j-3] == 'W')
+                                            town_shot++;
+                                        if(i-4 >=0 && j-4 >=0 && board[i-3][j-3] == ' ')
+                                        {
+                                            if(board[i-4][j-4] == 'w')
+                                                pawn_shot++;
+                                            if(board[i-4][j-4] == 'W')
+                                                town_shot++;
+                                        }
+                                    }
+                                }
                     }
                 }
             }
@@ -853,31 +1259,43 @@ class State{
         vector<int> value;
         value.push_back(pawn);
         value.push_back(kill);
+        value.push_back(townkill);
         value.push_back(freedom);
+        value.push_back(cannon);
+        value.push_back(pawn_shot);
+        value.push_back(town_shot);
         return value;
     }
 
     int utility(bool getMyUtility){
-        //if getMyUtility then check how favourable is the board for me
-        // else check how favourable the board is for opponent
-    /*     public:
-    bool isWhite;
-    vector<vector<char>> board;
-    string parentMessage;
-    string messageToBestChild;
-    int numRows;
-    int numCols;
-    char myPawn;
-    char myTower;
 
-    char oppPawn;
-    char oppTower;*/
     vector<int> town = TownAndExposedTown(getMyUtility);
     vector<int> opptown = TownAndExposedTown(!getMyUtility);
     vector<int> pawn = PawnsAndKills(getMyUtility);
     vector<int> opppawn = PawnsAndKills(!getMyUtility);
     
-    int a = town[0]+town[1]+pawn[0]+pawn[1]+pawn[2]-opptown[0]-opptown[1]-opppawn[0]-opppawn[1]-opppawn[2];
+    //int w_townhalls = 8;
+    //int w_blocked = 3;
+    //int w_vulnerable = -2;
+
+    //int w_pawns = 1;
+    //int w_pawn_moves = 0.5;
+    //int w_pawn_kills = 4;
+    //int w_town_kills = 10;
+    //int w_cannon = 3;
+    //int w_pawn_shot = 4;
+    //int w_town_shot = 10;
+
+    int a = w_townhalls*(town[0]-opptown[0])
+            +w_blocked*(town[1]-opptown[0])
+            +w_vulnerable*(town[2]-opptown[0])
+            +w_pawns*(pawn[0]-opppawn[0])
+            +w_pawn_kills*(pawn[1]-opppawn[0])
+            +w_town_kills*(pawn[2]-opppawn[0])
+            +w_pawn_moves*(pawn[3]-opppawn[0])
+            +w_cannon*(pawn[4]-opppawn[0])
+            +w_pawn_shot*(pawn[5]-opppawn[0])
+            +w_town_shot*(pawn[6]-opppawn[0]);
     //cout << a << "\n";
     if(getMyUtility)
         return a;
@@ -950,6 +1368,7 @@ class State{
     int MaxVal(int alpha,int beta,int depth, int maxDepth){
         if(depth>=maxDepth)return utility(true);
 
+        ofstream ofs("cannon.txt", std::ofstream::out);
         int maxChild = INT_MIN;
         
         int neighbour_count = 0;
@@ -965,6 +1384,7 @@ class State{
         
                     for(int iter = 0;iter< neighbours.size();iter++){
                         State newstate = getState(neighbours[iter]);
+                        ofs << neighbours[iter] << "\n";
                         int child = newstate.MinVal(alpha,beta,depth+1,maxDepth);
                         if(alpha>child){
                             alpha = child;
@@ -983,6 +1403,7 @@ class State{
                     
             }
         }
+        ofs.close();
 
         if(neighbour_count == 0){
             //you should check if in the stalemate condition which has occured you win or loose
