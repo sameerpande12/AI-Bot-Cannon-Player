@@ -127,7 +127,7 @@ class State{
 
                                 for(int dx=-1;dx<=1;dx++){
                                     if(j+dx>=0 && j+dx<numCols){
-                                        if(tempBoard[i+dy][j+dx]==oppPawn || tempBoard[i+dy][j+dx]== ' '){
+                                        if(tempBoard[i+dy][j+dx]==oppPawn || tempBoard[i+dy][j+dx]==oppTower || tempBoard[i+dy][j+dx]== ' '){
                                             // vector<vector<char>>nextBoard = tempBoard;
                                             // nextBoard[i][j]=' ';
                                             // nextBoard[i+dy][j+dx]=myPawn;
@@ -208,7 +208,7 @@ class State{
                                     //3shots begin
 
                                     if(  i+4 <numRows && j+4 <numCols){
-                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3] == ' ' && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4!=myTower){
+                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3] == ' ' && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4]!=myTower){
                                             //shot
                                             neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
                                         }
@@ -419,7 +419,7 @@ class State{
 
                                     for(int dx=-1;dx<=1;dx++){
                                         if(j+dx>=0 && j+dx<numCols){
-                                            if(tempBoard[i+dy][j+dx]==oppPawn || tempBoard[i+dy][j+dx]== ' '){
+                                            if(tempBoard[i+dy][j+dx]==oppPawn || tempBoard[i+dy][j+dx]==oppTower || tempBoard[i+dy][j+dx]== ' '){
                                                 // vector<vector<char>>nextBoard = tempBoard;
                                                 // nextBoard[i][j]=' ';
                                                 // nextBoard[i+dy][j+dx]=myPawn;
@@ -500,7 +500,7 @@ class State{
                                     //3shots begin
 
                                     if(  i+4 <numRows && j+4 <numCols){
-                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3] == ' ' && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4!=myTower){
+                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3] == ' ' && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4]!=myTower){
                                             //shot
                                             neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
                                         }
