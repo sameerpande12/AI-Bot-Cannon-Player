@@ -182,8 +182,8 @@ class State{
                         if( i+1 < numRows && i-1 >=0){
                             if( j-1 >=0 && j+1 < numCols ){
                                 /*
-                                w    O     w
-                                    w   R    w
+                                w     O       w
+                                  w   R     w
                                     w      w
                                 */
 
