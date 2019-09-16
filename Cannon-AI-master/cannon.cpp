@@ -9,16 +9,16 @@
 #include <time.h>  
 using namespace std;
 
-int w_townhalls = 40;
+int w_townhalls = 60;
 int w_blocked = 0;
 int w_vulnerable = 0;
 
-int w_pawns = 7;
+int w_pawns = 20;
 int w_pawn_moves = 0;
-int w_pawn_kills = 0;
-int w_town_kills = 6;
+int w_pawn_kills = 10;
+int w_town_kills = 20;
 int w_cannon = 0;
-int w_pawn_shot = 4;
+int w_pawn_shot = 8;
 int w_town_shot = 20;
 
 class State{
