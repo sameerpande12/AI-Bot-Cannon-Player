@@ -61,7 +61,7 @@ class State{
 
     string generateMove(){
         
-        int cost = MaxVal(INT_MIN,INT_MAX,0,3);
+        int cost = MaxVal(INT_MIN,INT_MAX,0,4);
         
         updateBoard(messageToBestChild,true);
         return messageToBestChild;
@@ -721,29 +721,29 @@ class State{
                 if(j%2 == 0){
                     if(board[0][j] == 'W'){
                         townHalls++;
-                        if(j-1 >=0 && board[board.size()-1][j-1] == 'w')
+                        if(j-1 >=0 && board[0][j-1] == 'w')
                             blocked++;
-                        else if(j-1 >=0 && board[board.size()-1][j-1] == 'b')
+                        else if(j-1 >=0 && board[0][j-1] == ' ')
                             vulnerable++;
 
-                        if(j+1 <board.size() && board[board.size()-1][j+1] == 'w')
+                        if(j+1 <board.size() && board[0][j+1] == 'w')
                             blocked++;
-                        else if(j+1 <board.size() && board[board.size()-1][j+1] == 'b')
+                        else if(j+1 <board.size() && board[0][j+1] == ' ')
                             vulnerable++;
 
-                        if(j-1 >=0 && board[board.size()-2][j-1] == 'w')
+                        if(j-1 >=0 && board[1][j-1] == 'w')
                             blocked++;
-                        else if(j-1 >=0 && board[board.size()-2][j-1] == 'b')
+                        else if(j-1 >=0 && board[1][j-1] == ' ')
                             vulnerable++;
 
-                        if(board[board.size()-2][j] == 'w')
+                        if(board[1][j] == 'w')
                             blocked++;
-                        else if(board[board.size()-2][j] == 'b')
+                        else if(board[1][j] == ' ')
                             vulnerable++;
 
-                        if(j+1 <board.size() && board[board.size()-2][j+1] == 'w')
+                        if(j+1 <board.size() && board[1][j+1] == 'w')
                             blocked++;
-                        else if(j+1 <board.size() && board[board.size()-2][j+1] == 'b')
+                        else if(j+1 <board.size() && board[1][j+1] == ' ')
                             vulnerable++;
                     }
                 }
@@ -757,27 +757,27 @@ class State{
                         townHalls++;
                         if(j-1 >=0 && board[numRows-1][j-1] == 'b')
                             blocked++;
-                        else if(j-1 >=0 && board[numRows-1][j-1] == 'w')
+                        else if(j-1 >=0 && board[numRows-1][j-1] == ' ')
                             vulnerable++;
 
                         if(j+1 <board.size() && board[numRows-1][j+1] == 'b')
                             blocked++;
-                        else if(j+1 <board.size() && board[numRows-1][j+1] == 'w')
+                        else if(j+1 <board.size() && board[numRows-1][j+1] == ' ')
                             vulnerable++;
 
                         if(j-1 >=0 && board[numRows-2][j-1] == 'b')
                             blocked++;
-                        else if(j-1 >=0 && board[numRows-2][j-1] == 'w')
+                        else if(j-1 >=0 && board[numRows-2][j-1] == ' ')
                             vulnerable++;
 
                         if(board[1][j] == 'b')
                             blocked++;
-                        else if(board[1][j] == 'w')
+                        else if(board[1][j] == ' ')
                             vulnerable++;
 
                         if(j+1 <board.size() && board[numRows-2][j+1] == 'b')
                             blocked++;
-                        else if(j+1 <board.size() && board[numRows-2][j+1] == 'w')
+                        else if(j+1 <board.size() && board[numRows-2][j+1] == ' ')
                             vulnerable++;
                     }
                 }
@@ -786,12 +786,12 @@ class State{
         vector<int> value;
         value.push_back(townHalls);
         value.push_back(blocked);
-        value.push_back(vulnerable);
+        value.push_back(vulnerable);/* 
         ofstream ofs("cannon.txt", std::ofstream::out);
         ofs << townHalls << "\n";
         ofs << blocked << "\n";
         ofs << vulnerable << "\n";
-        ofs.close();        
+        ofs.close();     */   
         return value;
     }
 
