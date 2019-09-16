@@ -9,17 +9,11 @@
 #include <time.h>  
 using namespace std;
 
-int w_townhalls = 60;
-int w_blocked = 0;
-int w_vulnerable = 0;
-
-int w_pawns = 20;
-int w_pawn_moves = 0;
-int w_pawn_kills = 10;
-int w_town_kills = 20;
-int w_cannon = 0;
-int w_pawn_shot = 8;
-int w_town_shot = 20;
+int w_townhalls = 100;
+int w_pawns = 60;
+int w_cannon = 10;
+int w_verti_cannon = 30;
+int global_count = 0;
 
 class State{
 
@@ -61,7 +55,13 @@ class State{
 
     string generateMove(){
         
-        int cost = MaxVal(INT_MIN,INT_MAX,0,3);
+        int cost = 0;
+        if(global_count<2)
+            cost = MaxVal(INT_MIN,INT_MAX,0,3);
+        else if(global_count<6)
+            cost = MaxVal(INT_MIN,INT_MAX,0,3);
+        else
+            cost = MaxVal(INT_MIN,INT_MAX,0,4);
         
         updateBoard(messageToBestChild,true);
         return messageToBestChild;
@@ -113,19 +113,287 @@ class State{
 
 
     vector<string> getNeighbours(int i , int j){
-                vector<string> neighbours;
+                vector<string> neighboursKill;
+                vector<string> neighboursMove;
+                vector<string> blankShots;
                 if(isWhite){
                     
                     vector<vector<char> >tempBoard = board;   
                     if(tempBoard[i][j]==myPawn){
                         //regular soldier capture
+
+                        //cannons check if cannon shooting is possible
+
+                        if( i+1 < numRows && i-1 >=0){
+                            if( j-1 >=0 && j+1 < numCols ){
+                                /*
+                                w     O       w
+                                  w   R     w
+                                    w      w
+                                */
+
+                                if( (tempBoard[i+1][j+1] == tempBoard[i][j]) && (tempBoard[i][j]==tempBoard[i-1][j-1])){
+
+                                    if(  i+3 <numRows && j+3 <numCols){
+                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3]!=myPawn && tempBoard[i+3][j+3]!=myTower){
+                                            //shot
+                                            if(tempBoard[i+3][j+3]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j+3));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j+3));
+                                        }
+
+
+                                    }
+
+                                    if( i-3 >=0 && j-3 >=0){
+                                        if(tempBoard[i-2][j-2] == ' ' && tempBoard[i-3][j-3]!=myPawn && tempBoard[i-3][j-3]!=myTower){
+                                            //shot
+                                            if(tempBoard[i-3][j-3]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j-3));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j-3));
+                                        }
+
+                                    }
+                                    //3shots begin
+
+                                    if(  i+4 <numRows && j+4 <numCols){
+                                        if(tempBoard[i+2][j+2]==' '  && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4]!=myTower){
+                                            //shot
+                                            if(tempBoard[i+4][j+4]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
+                                            else 
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
+                                        }
+
+
+                                    }
+
+                                    if( i-4 >=0 && j-4 >=0){
+                                        if(tempBoard[i-2][j-2] == ' ' && tempBoard[i-4][j-4]!=myPawn && tempBoard[i-4][j-4]!=myTower){
+                                            //shot
+                                            if(tempBoard[i-4][j-4]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j-4));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j-4));        
+
+                                        }
+
+                                    }
+                                    //movement
+
+                                    if(i-2>=0 && j-2 >=0){
+                                        if(tempBoard[i-2][j-2]== ' '){
+                                            //move
+                                            neighboursMove.push_back("S "+to_string(i+1)+" "+to_string(j+1)+" M "+to_string(i-2)+" "+to_string(j-2));
+                                        }
+                                    }
+
+                                    if(i+2<numRows && j+2 <numCols){
+                                        if(tempBoard[i+2][j+2]== ' '){
+                                            //move
+                                            neighboursMove.push_back("S "+to_string(i-1)+" "+to_string(j-1)+" M "+to_string(i+2)+" "+to_string(j+2));
+                                        }
+                                    }
+
+                                }
+
+                                if( (tempBoard[i-1][j+1]==tempBoard[i][j]) && ( tempBoard[i][j]== tempBoard[i+1][j-1])){
+                                    if(i-3 >=0 && j+3 < numCols){
+                                        if(tempBoard[i-2][j+2]==' ' && tempBoard[i-3][j+3]!=myPawn && tempBoard[i-3][j+3]!=myTower ){
+                                            //shot
+                                            if(tempBoard[i-3][j+3]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j+3));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j+3));
+                                        }
+                                    }
+
+                                    if(i+3 < numRows && j-3 >=0){
+                                        if(tempBoard[i+2][j-2]==' ' && tempBoard[i+3][j-3]!=myPawn && tempBoard[i+3][j-3]!=myTower){
+                                            //shot
+                                            if(tempBoard[i+3][j-3]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j-3));
+                                            else 
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j-3));
+                                        }
+                                    }
+                                    //3 shots 
+                                    if(i-4 >=0 && j+4 < numCols){
+                                        if(tempBoard[i-2][j+2]==' ' &&  tempBoard[i-3][j+3] == ' '&& tempBoard[i-4][j+4]!=myPawn && tempBoard[i-4][j+4]!=myTower ){
+                                            //shot
+                                            if(tempBoard[i-4][j+4]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j+4));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j+4));
+                                        }
+                                    }
+
+                                    if(i+4 < numRows && j-4 >=0){
+                                        if(tempBoard[i+2][j-2]==' '  && tempBoard[i+4][j-4]!=myPawn && tempBoard[i+4][j-4]!=myTower){
+                                            //shot
+                                            if(tempBoard[i+4][j-4]== ' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j-4));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j-4));
+                                        }
+                                    }
+
+                                    //movement
+                                    if(i-2 >= 0 && j+2 < numCols){
+                                        if(tempBoard[i-2][j+2]== ' '){
+                                        //move
+                                            neighboursMove.push_back("S "+to_string(i+1)+" "+to_string(j-1)+" M "+to_string(i-2)+" "+to_string(j+2));
+                                        }
+                                    }
+
+                                    if(i+2 < numRows && j-2 >=0){
+                                        if(tempBoard[i+2][j-2]==' '){
+                                            //move
+                                            neighboursMove.push_back("S "+to_string(i-1)+" "+to_string(j+1)+" M "+to_string(i+2)+" "+to_string(j-2));
+                                        }
+                                    }
+                                }
+
+                            }
+
+                            if((tempBoard[i][j]==tempBoard[i+1][j]) && (tempBoard[i][j] ==tempBoard[i-1][j])){
+                                /*
+                                w
+                                w
+                                w
+                                */
+                                if(i+3 < numRows){
+                                    if(tempBoard[i+2][j]==' ' && tempBoard[i+3][j]!=myPawn && tempBoard[i+3][j]!=myTower){
+                                        //shot
+                                        if(tempBoard[i+3][j]==' ')
+                                           blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j));
+                                    }
+                                }
+                                if(i-3 >= 0){
+                                    if(tempBoard[i-2][j]==' ' && tempBoard[i-3][j]!=myPawn && tempBoard[i-3][j]!=myTower){
+                                        //shot
+                                        if(tempBoard[i-3][j]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j));
+
+                                    }
+                                }
+                                //3shots
+                                if(i+4 < numRows){
+                                    if(tempBoard[i+2][j]==' ' && tempBoard[i+4][j]!=myPawn && tempBoard[i+4][j]!=myTower){
+                                        //shot
+                                        if(tempBoard[i+4][j]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j));
+                                    }
+                                }
+                                if(i-4 >= 0){
+                                    if(tempBoard[i-2][j]==' ' && tempBoard[i-4][j]!=myPawn && tempBoard[i-4][j]!=myTower){
+                                        //shot
+                                        if(tempBoard[i-4][j]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j));
+
+                                    }
+                                }
+
+                                //movement
+                                if(i+2<numRows){
+                                    if(tempBoard[i+2][j]==' '){
+                                        //move
+                                        
+                                            neighboursMove.push_back("S "+to_string(i-1)+" "+to_string(j)+" M "+to_string(i+2)+" "+to_string(j));
+                                    }
+
+                                }
+                                if(i-2 >=0){
+                                    if(tempBoard[i-2][j]==' '){
+                                        //move
+                                        neighboursMove.push_back("S "+to_string(i+1)+" "+to_string(j)+" M "+to_string(i-2)+" "+to_string(j));
+                                    }
+                                    
+                                }
+                            }
+
+                        }
+                        if(j-1>=0 && j+1 <numCols){
+
+                            //  w w w 
+                            if((tempBoard[i][j-1]==tempBoard[i][j] ) && (tempBoard[i][j]==tempBoard[i][j+1])){
+
+                                if(j-3>=0 ){
+                                    //shot
+                                    if(tempBoard[i][j-2]==' ' && tempBoard[i][j-3]!=myPawn && tempBoard[i][j-3]!=myTower){
+                                        if(tempBoard[i][j-3]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-3));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-3));
+                                    }
+                                }
+
+                                if(j+3 < numCols){
+                                    if(tempBoard[i][j+2]==' '&& tempBoard[i][j+3]!=myPawn && tempBoard[i][j+3]!=myTower){
+                                        //shot
+                                        if(tempBoard[i][j+3]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+3));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+3));
+                                    }
+                                }
+                                //3shots
+
+                                if(j-4>=0 ){
+                                    //shot
+                                    if(tempBoard[i][j-2]==' '  && tempBoard[i][j-4]!=myPawn && tempBoard[i][j-4]!=myTower){
+                                        if(tempBoard[i][j-4]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-4));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-4));
+                                    }
+                                }
+
+                                if(j+4 < numCols){
+                                    if(tempBoard[i][j+2]==' '&& tempBoard[i][j+4]!=myPawn && tempBoard[i][j+4]!=myTower){
+                                        //shot
+                                        if(tempBoard[i][j+4])
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+4));
+                                        else
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+4));
+                                    }
+                                }
+
+                                //movement
+                                if(j+2<numCols){
+                                    if(tempBoard[i][j+2]==' '){
+                                        //move right
+                                        neighboursMove.push_back("S "+to_string(i)+" "+to_string(j-1)+" M "+to_string(i)+" "+to_string(j+2));
+                                    }
+                                }
+                                if(j-2 >= 0){
+                                    if(tempBoard[i][j-2]==' '){
+                                        //moveLeft
+                                        neighboursMove.push_back("S "+to_string(i)+" "+to_string(j+1)+" M "+to_string(i)+" "+to_string(j-2));
+                                    }
+                                }
+
+
+                            }
+                        }
+
                         for(int dy = 1;dy>=-2;dy--){
                             if(dy==0){
                                 for(int dx = -1;dx<=1;dx+=2){
                                     if(j+dx>=0 && j+dx <numCols){
                                         
                                         if(tempBoard[i+dy][j+dx]==oppPawn || tempBoard[i+dy][j+dx]==oppTower){
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                            neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
                                             // vector<vector<char>>nextBoard = tempBoard;
                                             // nextBoard[i][j]=' ';
                                             // nextBoard[i+dy][j+dx]=myPawn;
@@ -144,7 +412,10 @@ class State{
                                             // vector<vector<char>>nextBoard = tempBoard;
                                             // nextBoard[i][j]=' ';
                                             // nextBoard[i+dy][j+dx]=myPawn;
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                            if(tempBoard[i+dy][j+dx]==' ')
+                                                neighboursMove.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
                                         }
                                     }
                                 }
@@ -179,7 +450,10 @@ class State{
                                                     // vector<vector<char>>nextBoard = tempBoard;
                                                     // nextBoard[i][j]=' ';
                                                     // nextBoard[i+dy][j+dx]=myPawn;
-                                                    neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                                    if(tempBoard[i+dy][j+dx]==' ')
+                                                        neighboursMove.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                                    else
+                                                        neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
                                                 }
                                             }
                                         }
@@ -190,218 +464,6 @@ class State{
 
                         }
 
-                        //cannons check if cannon shooting is possible
-
-                        if( i+1 < numRows && i-1 >=0){
-                            if( j-1 >=0 && j+1 < numCols ){
-                                /*
-                                w     O       w
-                                  w   R     w
-                                    w      w
-                                */
-
-                                if( (tempBoard[i+1][j+1] == tempBoard[i][j]) && (tempBoard[i][j]==tempBoard[i-1][j-1])){
-
-                                    if(  i+3 <numRows && j+3 <numCols){
-                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3]!=myPawn && tempBoard[i+3][j+3]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j+3));
-                                        }
-
-
-                                    }
-
-                                    if( i-3 >=0 && j-3 >=0){
-                                        if(tempBoard[i-2][j-2] == ' ' && tempBoard[i-3][j-3]!=myPawn && tempBoard[i-3][j-3]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j-3));
-                                        }
-
-                                    }
-                                    //3shots begin
-
-                                    if(  i+4 <numRows && j+4 <numCols){
-                                        if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3] == ' ' && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
-                                        }
-
-
-                                    }
-
-                                    if( i-4 >=0 && j-4 >=0){
-                                        if(tempBoard[i-2][j-2] == ' '&& tempBoard[i-3][j-3] == ' ' && tempBoard[i-4][j-4]!=myPawn && tempBoard[i-4][j-4]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j-4));
-                                        }
-
-                                    }
-                                    //movement
-
-                                    if(i-2>=0 && j-2 >=0){
-                                        if(tempBoard[i-2][j-2]== ' '){
-                                            //move
-                                            neighbours.push_back("S "+to_string(i+1)+" "+to_string(j+1)+" M "+to_string(i-2)+" "+to_string(j-2));
-                                        }
-                                    }
-
-                                    if(i+2<numRows && j+2 <numCols){
-                                        if(tempBoard[i+2][j+2]== ' '){
-                                            //move
-                                            neighbours.push_back("S "+to_string(i-1)+" "+to_string(j-1)+" M "+to_string(i+2)+" "+to_string(j+2));
-                                        }
-                                    }
-
-                                }
-
-                                if( (tempBoard[i-1][j+1]==tempBoard[i][j]) && ( tempBoard[i][j]== tempBoard[i+1][j-1])){
-                                    if(i-3 >=0 && j+3 < numCols){
-                                        if(tempBoard[i-2][j+2]==' ' && tempBoard[i-3][j+3]!=myPawn && tempBoard[i-3][j+3]!=myTower ){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j+3));
-                                        }
-                                    }
-
-                                    if(i+3 < numRows && j-3 >=0){
-                                        if(tempBoard[i+2][j-2]==' ' && tempBoard[i+3][j-3]!=myPawn && tempBoard[i+3][j-3]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j-3));
-                                        }
-                                    }
-                                    //3 shots 
-                                    if(i-4 >=0 && j+4 < numCols){
-                                        if(tempBoard[i-2][j+2]==' ' &&  tempBoard[i-3][j+3] == ' '&& tempBoard[i-4][j+4]!=myPawn && tempBoard[i-4][j+4]!=myTower ){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j+4));
-                                        }
-                                    }
-
-                                    if(i+4 < numRows && j-4 >=0){
-                                        if(tempBoard[i+2][j-2]==' ' && tempBoard[i+3][j-3]==' ' && tempBoard[i+4][j-4]!=myPawn && tempBoard[i+4][j-4]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j-4));
-                                        }
-                                    }
-
-                                    //movement
-                                    if(i-2 >= 0 && j+2 < numCols){
-                                        if(tempBoard[i-2][j+2]== ' '){
-                                        //move
-                                            neighbours.push_back("S "+to_string(i+1)+" "+to_string(j-1)+" M "+to_string(i-2)+" "+to_string(j+2));
-                                        }
-                                    }
-
-                                    if(i+2 < numRows && j-2 >=0){
-                                        if(tempBoard[i+2][j-2]==' '){
-                                            //move
-                                            neighbours.push_back("S "+to_string(i-1)+" "+to_string(j+1)+" M "+to_string(i+2)+" "+to_string(j-2));
-                                        }
-                                    }
-                                }
-
-                            }
-
-                            if((tempBoard[i][j]==tempBoard[i+1][j]) && (tempBoard[i][j] ==tempBoard[i-1][j])){
-                                /*
-                                w
-                                w
-                                w
-                                */
-                                if(i+3 < numRows){
-                                    if(tempBoard[i+2][j]==' ' && tempBoard[i+3][j]!=myPawn && tempBoard[i+3][j]!=myTower){
-                                        //shot
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j));
-                                    }
-                                }
-                                if(i-3 >= 0){
-                                    if(tempBoard[i-2][j]==' ' && tempBoard[i-3][j]!=myPawn && tempBoard[i-3][j]!=myTower){
-                                        //shot
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j));
-                                    }
-                                }
-                                //3shots
-                                if(i+4 < numRows){
-                                    if(tempBoard[i+2][j]==' ' && tempBoard[i+3][j]==' ' && tempBoard[i+4][j]!=myPawn && tempBoard[i+4][j]!=myTower){
-                                        //shot
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j));
-                                    }
-                                }
-                                if(i-4 >= 0){
-                                    if(tempBoard[i-2][j]==' ' && tempBoard[i-3][j]==' ' && tempBoard[i-4][j]!=myPawn && tempBoard[i-4][j]!=myTower){
-                                        //shot
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j));
-                                    }
-                                }
-
-                                //movement
-                                if(i+2<numRows){
-                                    if(tempBoard[i+2][j]==' '){
-                                        //move
-                                        neighbours.push_back("S "+to_string(i-1)+" "+to_string(j)+" M "+to_string(i+2)+" "+to_string(j));
-                                    }
-
-                                }
-                                if(i-2 >=0){
-                                    if(tempBoard[i-2][j]==' '){
-                                        //move
-                                        neighbours.push_back("S "+to_string(i+1)+" "+to_string(j)+" M "+to_string(i-2)+" "+to_string(j));
-                                    }
-                                    
-                                }
-                            }
-
-                        }
-                        if(j-1>=0 && j+1 <numCols){
-
-                            //  w w w 
-                            if((tempBoard[i][j-1]==tempBoard[i][j] ) && (tempBoard[i][j]==tempBoard[i][j+1])){
-
-                                if(j-3>=0 ){
-                                    //shot
-                                    if(tempBoard[i][j-2]==' ' && tempBoard[i][j-3]!=myPawn && tempBoard[i][j-3]!=myTower){
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-3));
-                                    }
-                                }
-
-                                if(j+3 < numCols){
-                                    if(tempBoard[i][j+2]==' '&& tempBoard[i][j+3]!=myPawn && tempBoard[i][j+3]!=myTower){
-                                        //shot
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+3));
-                                    }
-                                }
-                                //3shots
-
-                                if(j-4>=0 ){
-                                    //shot
-                                    if(tempBoard[i][j-2]==' ' && tempBoard[i][j-3]==' ' && tempBoard[i][j-4]!=myPawn && tempBoard[i][j-4]!=myTower){
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-4));
-                                    }
-                                }
-
-                                if(j+4 < numCols){
-                                    if(tempBoard[i][j+2]==' '&& tempBoard[i][j+3]==' '&& tempBoard[i][j+4]!=myPawn && tempBoard[i][j+4]!=myTower){
-                                        //shot
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+4));
-                                    }
-                                }
-
-                                //movement
-                                if(j+2<numCols){
-                                    if(tempBoard[i][j+2]==' '){
-                                        //move right
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j-1)+" M "+to_string(i)+" "+to_string(j+2));
-                                    }
-                                }
-                                if(j-2 >= 0){
-                                    if(tempBoard[i][j-2]==' '){
-                                        //moveLeft
-                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j+1)+" M "+to_string(i)+" "+to_string(j-2));
-                                    }
-                                }
-
-
-                            }
-                        }
 
 
                     }
@@ -410,6 +472,271 @@ class State{
                     vector<vector<char> >tempBoard = board;
                         
                         if(tempBoard[i][j]==myPawn){
+
+                            //cannons check if cannon shooting is possible
+
+                            if( i+1 < numRows && i-1 >=0){
+                                if( j-1 >=0 && j+1 < numCols ){
+                                    /*
+                                    w     O       w
+                                    w   R     w
+                                        w      w
+                                    */
+
+                                    if( (tempBoard[i+1][j+1] == tempBoard[i][j]) && (tempBoard[i][j]==tempBoard[i-1][j-1])){
+
+                                        if(  i+3 <numRows && j+3 <numCols){
+                                            if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3]!=myPawn && tempBoard[i+3][j+3]!=myTower){
+                                                //shot
+                                                if(tempBoard[i+3][j+3]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j+3));
+                                                else
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j+3));
+                                            }
+
+
+                                        }
+
+                                        if( i-3 >=0 && j-3 >=0){
+                                            if(tempBoard[i-2][j-2] == ' ' && tempBoard[i-3][j-3]!=myPawn && tempBoard[i-3][j-3]!=myTower){
+                                                //shot
+                                                if(tempBoard[i-3][j-3]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j-3));
+                                                else
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j-3));
+                                            }
+
+                                        }
+                                        //3shots begin
+
+                                        if(  i+4 <numRows && j+4 <numCols){
+                                            if(tempBoard[i+2][j+2]==' '  && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4]!=myTower){
+                                                //shot
+                                                if(tempBoard[i+4][j+4]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
+                                                else 
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
+                                            }
+
+
+                                        }
+
+                                        if( i-4 >=0 && j-4 >=0){
+                                            if(tempBoard[i-2][j-2] == ' ' && tempBoard[i-4][j-4]!=myPawn && tempBoard[i-4][j-4]!=myTower){
+                                                //shot
+                                                if(tempBoard[i-4][j-4]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j-4));
+                                                else
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j-4));        
+
+                                            }
+
+                                        }
+                                        //movement
+
+                                        if(i-2>=0 && j-2 >=0){
+                                            if(tempBoard[i-2][j-2]== ' '){
+                                                //move
+                                                neighboursMove.push_back("S "+to_string(i+1)+" "+to_string(j+1)+" M "+to_string(i-2)+" "+to_string(j-2));
+                                            }
+                                        }
+
+                                        if(i+2<numRows && j+2 <numCols){
+                                            if(tempBoard[i+2][j+2]== ' '){
+                                                //move
+                                                neighboursMove.push_back("S "+to_string(i-1)+" "+to_string(j-1)+" M "+to_string(i+2)+" "+to_string(j+2));
+                                            }
+                                        }
+
+                                    }
+
+                                    if( (tempBoard[i-1][j+1]==tempBoard[i][j]) && ( tempBoard[i][j]== tempBoard[i+1][j-1])){
+                                        if(i-3 >=0 && j+3 < numCols){
+                                            if(tempBoard[i-2][j+2]==' ' && tempBoard[i-3][j+3]!=myPawn && tempBoard[i-3][j+3]!=myTower ){
+                                                //shot
+                                                if(tempBoard[i-3][j+3]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j+3));
+                                                else
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j+3));
+                                            }
+                                        }
+
+                                        if(i+3 < numRows && j-3 >=0){
+                                            if(tempBoard[i+2][j-2]==' ' && tempBoard[i+3][j-3]!=myPawn && tempBoard[i+3][j-3]!=myTower){
+                                                //shot
+                                                if(tempBoard[i+3][j-3]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j-3));
+                                                else 
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j-3));
+                                            }
+                                        }
+                                        //3 shots 
+                                        if(i-4 >=0 && j+4 < numCols){
+                                            if(tempBoard[i-2][j+2]==' ' &&  tempBoard[i-3][j+3] == ' '&& tempBoard[i-4][j+4]!=myPawn && tempBoard[i-4][j+4]!=myTower ){
+                                                //shot
+                                                if(tempBoard[i-4][j+4]==' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j+4));
+                                                else
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j+4));
+                                            }
+                                        }
+
+                                        if(i+4 < numRows && j-4 >=0){
+                                            if(tempBoard[i+2][j-2]==' '  && tempBoard[i+4][j-4]!=myPawn && tempBoard[i+4][j-4]!=myTower){
+                                                //shot
+                                                if(tempBoard[i+4][j-4]== ' ')
+                                                    blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j-4));
+                                                else
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j-4));
+                                            }
+                                        }
+
+                                        //movement
+                                        if(i-2 >= 0 && j+2 < numCols){
+                                            if(tempBoard[i-2][j+2]== ' '){
+                                            //move
+                                                neighboursMove.push_back("S "+to_string(i+1)+" "+to_string(j-1)+" M "+to_string(i-2)+" "+to_string(j+2));
+                                            }
+                                        }
+
+                                        if(i+2 < numRows && j-2 >=0){
+                                            if(tempBoard[i+2][j-2]==' '){
+                                                //move
+                                                neighboursMove.push_back("S "+to_string(i-1)+" "+to_string(j+1)+" M "+to_string(i+2)+" "+to_string(j-2));
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                                if((tempBoard[i][j]==tempBoard[i+1][j]) && (tempBoard[i][j] ==tempBoard[i-1][j])){
+                                    /*
+                                    w
+                                    w
+                                    w
+                                    */
+                                    if(i+3 < numRows){
+                                        if(tempBoard[i+2][j]==' ' && tempBoard[i+3][j]!=myPawn && tempBoard[i+3][j]!=myTower){
+                                            //shot
+                                            if(tempBoard[i+3][j]==' ')
+                                            blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j));
+                                        }
+                                    }
+                                    if(i-3 >= 0){
+                                        if(tempBoard[i-2][j]==' ' && tempBoard[i-3][j]!=myPawn && tempBoard[i-3][j]!=myTower){
+                                            //shot
+                                            if(tempBoard[i-3][j]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j));
+
+                                        }
+                                    }
+                                    //3shots
+                                    if(i+4 < numRows){
+                                        if(tempBoard[i+2][j]==' ' && tempBoard[i+4][j]!=myPawn && tempBoard[i+4][j]!=myTower){
+                                            //shot
+                                            if(tempBoard[i+4][j]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j));
+                                        }
+                                    }
+                                    if(i-4 >= 0){
+                                        if(tempBoard[i-2][j]==' ' && tempBoard[i-4][j]!=myPawn && tempBoard[i-4][j]!=myTower){
+                                            //shot
+                                            if(tempBoard[i-4][j]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j));
+
+                                        }
+                                    }
+
+                                    //movement
+                                    if(i+2<numRows){
+                                        if(tempBoard[i+2][j]==' '){
+                                            //move
+                                            
+                                                neighboursMove.push_back("S "+to_string(i-1)+" "+to_string(j)+" M "+to_string(i+2)+" "+to_string(j));
+                                        }
+
+                                    }
+                                    if(i-2 >=0){
+                                        if(tempBoard[i-2][j]==' '){
+                                            //move
+                                            neighboursMove.push_back("S "+to_string(i+1)+" "+to_string(j)+" M "+to_string(i-2)+" "+to_string(j));
+                                        }
+                                        
+                                    }
+                                }
+
+                            }
+                            if(j-1>=0 && j+1 <numCols){
+
+                                //  w w w 
+                                if((tempBoard[i][j-1]==tempBoard[i][j] ) && (tempBoard[i][j]==tempBoard[i][j+1])){
+
+                                    if(j-3>=0 ){
+                                        //shot
+                                        if(tempBoard[i][j-2]==' ' && tempBoard[i][j-3]!=myPawn && tempBoard[i][j-3]!=myTower){
+                                            if(tempBoard[i][j-3]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-3));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-3));
+                                        }
+                                    }
+
+                                    if(j+3 < numCols){
+                                        if(tempBoard[i][j+2]==' '&& tempBoard[i][j+3]!=myPawn && tempBoard[i][j+3]!=myTower){
+                                            //shot
+                                            if(tempBoard[i][j+3]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+3));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+3));
+                                        }
+                                    }
+                                    //3shots
+
+                                    if(j-4>=0 ){
+                                        //shot
+                                        if(tempBoard[i][j-2]==' '  && tempBoard[i][j-4]!=myPawn && tempBoard[i][j-4]!=myTower){
+                                            if(tempBoard[i][j-4]==' ')
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-4));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-4));
+                                        }
+                                    }
+
+                                    if(j+4 < numCols){
+                                        if(tempBoard[i][j+2]==' '&& tempBoard[i][j+4]!=myPawn && tempBoard[i][j+4]!=myTower){
+                                            //shot
+                                            if(tempBoard[i][j+4])
+                                                blankShots.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+4));
+                                            else
+                                                neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+4));
+                                        }
+                                    }
+
+                                    //movement
+                                    if(j+2<numCols){
+                                        if(tempBoard[i][j+2]==' '){
+                                            //move right
+                                            neighboursMove.push_back("S "+to_string(i)+" "+to_string(j-1)+" M "+to_string(i)+" "+to_string(j+2));
+                                        }
+                                    }
+                                    if(j-2 >= 0){
+                                        if(tempBoard[i][j-2]==' '){
+                                            //moveLeft
+                                            neighboursMove.push_back("S "+to_string(i)+" "+to_string(j+1)+" M "+to_string(i)+" "+to_string(j-2));
+                                        }
+                                    }
+
+
+                                }
+                            }
                             //regular soldier capture
                             for(int dy = -1;dy<=2;dy++){
                                 if(dy==0){
@@ -420,7 +747,8 @@ class State{
                                                 // vector<vector<char>>nextBoard = tempBoard;
                                                 // nextBoard[i][j]=' ';
                                                 // nextBoard[i+dy][j+dx]=myPawn;
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                                
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
                                             }
                                         }
                                     }
@@ -436,7 +764,10 @@ class State{
                                                 // vector<vector<char>>nextBoard = tempBoard;
                                                 // nextBoard[i][j]=' ';
                                                 // nextBoard[i+dy][j+dx]=myPawn;
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                                if(tempBoard[i+dy][j+dx]==' ')
+                                                    neighboursMove.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                                else 
+                                                    neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
                                             }
                                         }
                                     }
@@ -471,7 +802,7 @@ class State{
                                                         // vector<vector<char>>nextBoard = tempBoard;
                                                         // nextBoard[i][j]=' ';
                                                         // nextBoard[i+dy][j+dx]=myPawn;
-                                                        neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
+                                                        neighboursKill.push_back("S "+to_string(i)+" "+to_string(j)+" M "+to_string(i+dy)+" "+to_string(j+dx));
                                                     }
                                                 }
                                             }
@@ -483,221 +814,7 @@ class State{
                             }
 
                             //cannons check if cannon shooting is possible
-                            if( i+1 < numRows && i-1 >=0){
-                                if( j-1 >=0 && j+1 < numCols ){
-                                    /*
-                                    w     O       w
-                                      w   R     w
-                                        w      w
-                                    */
-
-                                    if((tempBoard[i+1][j+1] == tempBoard[i][j]) &&   (tempBoard[i][j]==tempBoard[i-1][j-1])){
-                                        
-                                        if(  i+3 <numRows && j+3 <numCols){
-                                            
-                                            if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3]!=myPawn && tempBoard[i+3][j+3]!=myTower){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j+3));
-                                            }
-
-
-                                        }
-                                        
-
-                                        if( i-3 >=0 && j-3 >=0){
-                                            if(tempBoard[i-2][j-2] == ' ' && tempBoard[i-3][j-3]!=myPawn && tempBoard[i-3][j-3]!=myTower){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j-3));
-                                            }
-
-                                        }
-                                        
-                                        //3shots begin
-
-                                        if(  i+4 <numRows && j+4 <numCols){
-                                            if(tempBoard[i+2][j+2]==' ' && tempBoard[i+3][j+3] == ' ' && tempBoard[i+4][j+4]!=myPawn && tempBoard[i+4][j+4]!=myTower){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j+4));
-                                            }
-
-
-                                        }
-                                        
-                                        if( i-4 >=0 && j-4 >=0){
-                                            if(tempBoard[i-2][j-2] == ' '&& tempBoard[i-3][j-3] == ' ' && tempBoard[i-4][j-4]!=myPawn && tempBoard[i-4][j-4]!=myTower){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j-4));
-                                            }
-
-                                        }
-                                        //movement
-                                        
-                                        if(i-2>=0 && j-2 >=0){
-                                            if(tempBoard[i-2][j-2]== ' '){
-                                                //move
-                                                neighbours.push_back("S "+to_string(i+1)+" "+to_string(j+1)+" M "+to_string(i-2)+" "+to_string(j-2));
-                                            }
-                                        }
-                                       
-                                        if(i+2<numRows && j+2 <numCols){
-                                            if(tempBoard[i+2][j+2]== ' '){
-                                                //move
-                                                neighbours.push_back("S "+to_string(i-1)+" "+to_string(j-1)+" M "+to_string(i+2)+" "+to_string(j+2));
-                                            }
-                                        }
-
-                                    }
-                                    
-                                    if((tempBoard[i-1][j+1]==tempBoard[i][j])  && (tempBoard[i][j]== tempBoard[i+1][j-1])){
-                                        
-                                        if(i-3 >=0 && j+3 < numCols){
-                                            if(tempBoard[i-2][j+2]==' ' && tempBoard[i-3][j+3]!=myPawn && tempBoard[i-3][j+3]!=myTower ){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j+3));
-                                            }
-                                        }
-
-                                        if(i+3 < numRows && j-3 >=0){
-                                            if(tempBoard[i+2][j-2]==' ' && tempBoard[i+3][j-3]!=myPawn && tempBoard[i+3][j-3]!=myTower){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j-3));
-                                            }
-                                        }
-                                        //3 shots 
-                                        if(i-4 >=0 && j+4 < numCols){
-                                            if(tempBoard[i-2][j+2]==' ' &&  tempBoard[i-3][j+3] == ' '&& tempBoard[i-4][j+4]!=myPawn && tempBoard[i-4][j+4]!=myTower ){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j+4));
-                                            }
-                                        }
-
-                                        if(i+4 < numRows && j-4 >=0){
-                                            if(tempBoard[i+2][j-2]==' ' && tempBoard[i+3][j-3]==' ' && tempBoard[i+4][j-4]!=myPawn && tempBoard[i+4][j-4]!=myTower){
-                                                //shot
-                                                neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j-4));
-                                            }
-                                        }
-
-                                        //movement
-                                        if(i-2 >= 0 && j+2 < numCols){
-                                            if(tempBoard[i-2][j+2]== ' '){
-                                            //move
-                                                neighbours.push_back("S "+to_string(i+1)+" "+to_string(j-1)+" M "+to_string(i-2)+" "+to_string(j+2));
-                                            }
-                                        }
-
-                                        if(i+2 < numRows && j-2 >=0){
-                                            if(tempBoard[i+2][j-2]==' '){
-                                                //move
-                                                neighbours.push_back("S "+to_string(i-1)+" "+to_string(j+1)+" M "+to_string(i+2)+" "+to_string(j-2));
-                                            }
-                                        }
-                                    }
-                                    
-
-                                }
-
-                                if((tempBoard[i][j]==tempBoard[i+1][j]) && (tempBoard[i][j]==tempBoard[i-1][j])){
-                                    /*
-                                    w
-                                    w
-                                    w
-                                    */
-                                    if(i+3 < numRows){
-                                        if(tempBoard[i+2][j]==' ' && tempBoard[i+3][j]!=myPawn && tempBoard[i+3][j]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+3)+" "+to_string(j));
-                                        }
-                                    }
-                                    if(i-3 >= 0){
-                                        if(tempBoard[i-2][j]==' ' && tempBoard[i-3][j]!=myPawn && tempBoard[i-3][j]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-3)+" "+to_string(j));
-                                        }
-                                    }
-                                    //3shots
-                                    if(i+4 < numRows){
-                                        if(tempBoard[i+2][j]==' ' && tempBoard[i+3][j]==' ' && tempBoard[i+4][j]!=myPawn && tempBoard[i+4][j]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i+4)+" "+to_string(j));
-                                        }
-                                    }
-                                    if(i-4 >= 0){
-                                        if(tempBoard[i-2][j]==' ' && tempBoard[i-3][j]==' ' && tempBoard[i-4][j]!=myPawn && tempBoard[i-4][j]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i-4)+" "+to_string(j));
-                                        }
-                                    }
-
-                                    //movement
-                                    if(i+2<numRows){
-                                        if(tempBoard[i+2][j]==' '){
-                                            //move
-                                            neighbours.push_back("S "+to_string(i-1)+" "+to_string(j)+" M "+to_string(i+2)+" "+to_string(j));
-                                        }
-
-                                    }
-                                    if(i-2 >=0){
-                                        if(tempBoard[i-2][j]==' '){
-                                            //move
-                                            neighbours.push_back("S "+to_string(i+1)+" "+to_string(j)+" M "+to_string(i-2)+" "+to_string(j));
-                                        }
-                                        
-                                    }
-                                }
-
-                            }
-                            if(j-1>=0 && j+1 <numCols){
-
-                                //  w w w 
-                                if((tempBoard[i][j-1]==tempBoard[i][j]) && (tempBoard[i][j] ==tempBoard[i][j+1])){
-
-                                    if(j-3>=0 ){
-                                        //shot
-                                        if(tempBoard[i][j-2]==' ' && tempBoard[i][j-3]!=myPawn && tempBoard[i][j-3]!=myTower){
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-3));
-                                        }
-                                    }
-
-                                    if(j+3 < numCols){
-                                        if(tempBoard[i][j+2]==' '&& tempBoard[i][j+3]!=myPawn && tempBoard[i][j+3]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+3));
-                                        }
-                                    }
-                                    //3shots
-
-                                    if(j-4>=0 ){
-                                        //shot
-                                        if(tempBoard[i][j-2]==' ' && tempBoard[i][j-3]==' ' && tempBoard[i][j-4]!=myPawn && tempBoard[i][j-4]!=myTower){
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j-4));
-                                        }
-                                    }
-
-                                    if(j+4 < numCols){
-                                        if(tempBoard[i][j+2]==' '&& tempBoard[i][j+3]==' '&& tempBoard[i][j+4]!=myPawn && tempBoard[i][j+4]!=myTower){
-                                            //shot
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j)+" B "+to_string(i)+" "+to_string(j+4));
-                                        }
-                                    }
-
-                                    //movement
-                                    if(j+2<numCols){
-                                        if(tempBoard[i][j+2]==' '){
-                                            //move right
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j-1)+" M "+to_string(i)+" "+to_string(j+2));
-                                        }
-                                    }
-                                    if(j-2 >= 0){
-                                        if(tempBoard[i][j-2]==' '){
-                                            //moveLeft
-                                            neighbours.push_back("S "+to_string(i)+" "+to_string(j+1)+" M "+to_string(i)+" "+to_string(j-2));
-                                        }
-                                    }
-
-
-                                }
-                            }
+                            
 
                         }
 
@@ -706,8 +823,13 @@ class State{
                     
 
                 }
+                for(int i =0;i<neighboursMove.size();i++){
+                    neighboursKill.push_back(neighboursMove[i]);
+                }
+                for(int i = 0;i<blankShots.size();i++)
+                    neighboursKill.push_back(blankShots[i]);
 
-                return neighbours;
+                return neighboursKill;
     }
 
     vector<int> TownAndExposedTown(bool Mine)
@@ -719,74 +841,21 @@ class State{
         {
             for(int j=0;j<numCols;j++){
                 if(j%2 == 0){
-                    if(board[0][j] == 'W'){
+                    if(board[0][j] == 'W')
                         townHalls++;
-                        if(j-1 >=0 && board[0][j-1] == 'w')
-                            blocked++;
-                        else if(j-1 >=0 && board[0][j-1] == 'b')
-                            vulnerable++;
-
-                        if(j+1 <board.size() && board[0][j+1] == 'w')
-                            blocked++;
-                        else if(j+1 <board.size() && board[0][j+1] == 'b')
-                            vulnerable++;
-
-                        if(j-1 >=0 && board[1][j-1] == 'w')
-                            blocked++;
-                        else if(j-1 >=0 && board[1][j-1] == 'b')
-                            vulnerable++;
-
-                        if(board[1][j] == 'w')
-                            blocked++;
-                        else if(board[1][j] == 'b')
-                            vulnerable++;
-
-                        if(j+1 <board.size() && board[1][j+1] == 'w')
-                            blocked++;
-                        else if(j+1 <board.size() && board[1][j+1] == 'b')
-                            vulnerable++;
-                    }
                 }
             }
-
         }
         else{
             for(int j=0;j<numCols;j++){
                 if(j%2 == 1){
-                    if(board[numRows-1][j] == 'B'){
+                    if(board[numRows-1][j] == 'B')
                         townHalls++;
-                        if(j-1 >=0 && board[numRows-1][j-1] == 'b')
-                            blocked++;
-                        else if(j-1 >=0 && board[numRows-1][j-1] == 'w')
-                            vulnerable++;
-
-                        if(j+1 <board.size() && board[numRows-1][j+1] == 'b')
-                            blocked++;
-                        else if(j+1 <board.size() && board[numRows-1][j+1] == 'w')
-                            vulnerable++;
-
-                        if(j-1 >=0 && board[numRows-2][j-1] == 'b')
-                            blocked++;
-                        else if(j-1 >=0 && board[numRows-2][j-1] == 'w')
-                            vulnerable++;
-
-                        if(board[1][j] == 'b')
-                            blocked++;
-                        else if(board[1][j] == 'w')
-                            vulnerable++;
-
-                        if(j+1 <board.size() && board[numRows-2][j+1] == 'b')
-                            blocked++;
-                        else if(j+1 <board.size() && board[numRows-2][j+1] == 'w')
-                            vulnerable++;
-                    }
                 }
             }
         }
         vector<int> value;
-        value.push_back(townHalls);
-        value.push_back(blocked);
-        value.push_back(vulnerable);/* 
+        value.push_back(townHalls);/* 
         ofstream ofs("cannon.txt", std::ofstream::out);
         ofs << townHalls << "\n";
         ofs << blocked << "\n";
@@ -805,9 +874,10 @@ class State{
         int cannon = 0;
         int pawn_shot = 0;
         int town_shot = 0;
+        int verti_cannon = 0;
 
         if((Mine && myPawn == 'w') || (!Mine && myPawn == 'b')){
-            //cout << parentMessage;
+            //cout << parentMessage << "\n";
             for(int i = 0;i<board.size();i++)
             {
                 //cout <<"\n";
@@ -817,224 +887,27 @@ class State{
                     if(board[i][j] == 'w')
                     {
                         pawn++;
-                        if(j-1>=0){
-                            if(board[i][j-1] == 'b'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i][j-1] == 'B'){
-                                surround = true;
-                                townkill++;
-                            }
-                        } 
- 
-                        if(j+1 < board.size()){ 
-                            if(board[i][j+1] == 'b'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i][j+1] == 'B'){
-                                surround = true;
-                                townkill++;
-                            }
-                        }
                         
-                        if(j-1 >=0 && i+1 <board.size()){
-                            if(board[i+1][j-1] == 'b'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i+1][j-1] == 'B'){
-                                surround = true;
-                                townkill++;
-                            }
-                            else if(board[i+1][j-1] == ' ')
-                                freedom++;
-                        }
-                        if(i+1 <board.size()){
-                            if(board[i+1][j] == 'b'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i+1][j] == 'B'){
-                                surround = true;
-                                townkill++;
-                            }
-                            else if(board[i+1][j] == ' ')
-                                freedom++;
-                        }
-                        if(j+1 < board.size() && i+1 <board.size()){
-                            if(board[i+1][j+1] == 'b'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i+1][j+1] == 'B'){
-                                surround = true;
-                                townkill++;
-                            }
-                            else if(board[i+1][j+1] == ' ')
-                                freedom++;
-                        }
-
-                        
-                        if(surround == true)
-                        {
-                            if(i-2 >=0)
-                            {
-                                if(j-2 >= 0){
-                                    if(board[i-2][j-2] == ' ')
-                                        freedom++;
-                                    else if(board[i-2][j-2] == 'w')
-                                        kill++;
-                                }
-                                if(j+2 <board.size()){
-                                    if(board[i-2][j+2] == ' ')
-                                        freedom++;
-                                    else if(board[i-2][j+2] == 'w')
-                                        kill++;
-                                }
-                            }
-                        }
                         if(j+1 < board.size() && j-1 >=0)
                             if(board[i][j+1] == 'w')
-                                if(board[i][j-1] == 'w'){
+                                if(board[i][j-1] == 'w')
                                     cannon++;
-                                    if(j-3 >= 0 && board[i][j-2] != ' ')
-                                    {
-                                        
-                                        if(board[i][j-3] == 'b')
-                                            pawn_shot++;
-                                        if(board[i][j-3] == 'B')
-                                            town_shot++;
-                                        if(j-4 >= 0 && board[i][j-3] == ' ')
-                                        {
-                                            if(board[i][j-4] == 'b')
-                                                pawn_shot++;
-                                            if(board[i][j-4] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(j+3 < board.size() && board[i][j+2] != ' ')
-                                    {
-                                        
-                                        if(board[i][j+3] == 'b')
-                                            pawn_shot++;
-                                        if(board[i][j+3] == 'B')
-                                            town_shot++;
-                                        if(j+4 < board.size() && board[i][j+3] == ' ')
-                                        {
-                                            if(board[i][j+4] == 'b')
-                                                pawn_shot++;
-                                            if(board[i][j+4] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                    
                         if(i+1 < board.size() && i-1 >=0)
                             if(board[i+1][j] == 'w')
-                                if(board[i-1][j] == 'w'){
-                                    cannon++;
-                                    if(i-3 >= 0 && board[i-2][j] != ' ')
-                                    {
-                                        
-                                        if(board[i-3][j] == 'b')
-                                            pawn_shot++;
-                                        if(board[i-3][j] == 'B')
-                                            town_shot++;
-                                        if(i-4 >=0 && board[i-3][j] == ' ')
-                                        {
-                                            if(board[i-4][j] == 'b')
-                                                pawn_shot++;
-                                            if(board[i-4][j] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(i+3 < board.size() && board[i+2][j] != ' ')
-                                    {
-                                        
-                                        if(board[i+3][j] == 'b')
-                                            pawn_shot++;
-                                        if(board[i+3][j] == 'B')
-                                            town_shot++;
-                                        if(i+4 < board.size() && board[i+3][j] == ' ')
-                                        {
-                                            if(board[i+4][j] == 'b')
-                                                pawn_shot++;
-                                            if(board[i+4][j] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                if(board[i-1][j] == 'w')
+                                    verti_cannon++;
+                                    
                         if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
                             if(board[i-1][j+1] == 'w')
-                                if(board[i+1][j-1] == 'w'){
+                                if(board[i+1][j-1] == 'w')
                                     cannon++;
-                                    if(i-3 >= 0 && j+3 < board.size() && board[i-2][j+2] != ' ')
-                                    {
-                                        
-                                        if(board[i-3][j+3] == 'b')
-                                            pawn_shot++;
-                                        if(board[i-3][j+3] == 'B')
-                                            town_shot++;
-                                        if(i-4 >= 0 && j+4 < board.size() && board[i-3][j+3] == ' ')
-                                        {
-                                            if(board[i-4][j+4] == 'b')
-                                                pawn_shot++;
-                                            if(board[i-4][j+4] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(j-3 >= 0 && i+3 < board.size() && board[i+2][j-2] != ' ')
-                                    {
-                                        
-                                        if(board[i+3][j-3] == 'b')
-                                            pawn_shot++;
-                                        if(board[i+3][j-3] == 'B')
-                                            town_shot++;
-                                        if(j-4 >= 0 && i+4 < board.size() && board[i+3][j-3] == ' ')
-                                        {
-                                            if(board[i+4][j-4] == 'b')
-                                                pawn_shot++;
-                                            if(board[i+4][j-4] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                    
                         if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
                             if(board[i-1][j-1] == 'w')
-                                if(board[i+1][j+1] == 'w'){
+                                if(board[i+1][j+1] == 'w')
                                     cannon++;
-                                    if(i+3 < board.size() && j+3 < board.size() && board[i+2][j+2] != ' ')
-                                    {
-                                        
-                                        if(board[i+3][j+3] == 'b')
-                                            pawn_shot++;
-                                        if(board[i+3][j+3] == 'B')
-                                            town_shot++;
-                                        if(i+4 < board.size() && j+4 < board.size() && board[i+3][j+3] == ' ')
-                                        {
-                                            if(board[i+4][j+4] == 'b')
-                                                pawn_shot++;
-                                            if(board[i+4][j+4] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(i-3 >=0 && j-3 >=0 && board[i-2][j-2] != ' ')
-                                    {
-                                        
-                                        if(board[i-3][j-3] == 'b')
-                                            pawn_shot++;
-                                        if(board[i-3][j-3] == 'B')
-                                            town_shot++;
-                                        if(i-4 >=0 && j-4 >=0 && board[i-3][j-3] == ' ')
-                                        {
-                                            if(board[i-4][j-4] == 'b')
-                                                pawn_shot++;
-                                            if(board[i-4][j-4] == 'B')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                    
                     }
                 }
             }
@@ -1047,237 +920,40 @@ class State{
                     if(board[i][j] == 'b')
                     {
                         pawn++;
-                        if(j-1>=0){
-                            if(board[i][j-1] == 'w'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i][j-1] == 'W'){
-                                surround = true;
-                                townkill++;
-                            }
-                        } 
- 
-                        if(j+1 < board.size()){ 
-                            if(board[i][j+1] == 'w'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i][j+1] == 'W'){
-                                surround = true;
-                                townkill++;
-                            }
-                        }
                         
-                        if(j-1 >=0 && i-1 >=0){
-                            if(board[i-1][j-1] == 'w'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i-1][j-1] == 'W'){
-                                surround = true;
-                                townkill++;
-                            }
-                            else if(board[i-1][j-1] == ' ')
-                                freedom++;
-                        }
-                        if(i-1 >=0){
-                            if(board[i-1][j] == 'w'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i-1][j] == 'W'){
-                                surround = true;
-                                townkill++;
-                            }
-                            else if(board[i-1][j] == ' ')
-                                freedom++;
-                        }
-                        if(j+1 < board.size() && i-1 >=0){
-                            if(board[i-1][j+1] == 'w'){
-                                surround = true;
-                                kill++;
-                            }
-                            else if(board[i-1][j+1] == 'W'){
-                                surround = true;
-                                townkill++;
-                            }
-                            else if(board[i-1][j+1] == ' ')
-                                freedom++;
-                        }
-
-                        
-                        if(surround == true)
-                        {
-                            if(i+2 <board.size())
-                            {
-                                if(j-2 >= 0){
-                                    if(board[i+2][j-2] == ' ')
-                                        freedom++;
-                                    else if(board[i+2][j-2] == 'b')
-                                        kill++;
-                                }
-                                if(j+2 <board.size()){
-                                    if(board[i+2][j+2] == ' ')
-                                        freedom++;
-                                    else if(board[i+2][j+2] == 'b')
-                                        kill++;
-                                }
-                            }
-                        }
-
                         if(j+1 < board.size() && j-1 >=0)
                             if(board[i][j+1] == 'b')
-                                if(board[i][j-1] == 'b'){
+                                if(board[i][j-1] == 'b')
                                     cannon++;
-                                    if(j-3 >= 0 && board[i][j-2] != ' ')
-                                    {
-                                        
-                                        if(board[i][j-3] == 'w')
-                                            pawn_shot++;
-                                        if(board[i][j-3] == 'W')
-                                            town_shot++;
-                                        if(j-4 >= 0 && board[i][j-3] == ' ')
-                                        {
-                                            if(board[i][j-4] == 'w')
-                                                pawn_shot++;
-                                            if(board[i][j-4] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(j+3 < board.size() && board[i][j+2] != ' ')
-                                    {
-                                        
-                                        if(board[i][j+3] == 'w')
-                                            pawn_shot++;
-                                        if(board[i][j+3] == 'W')
-                                            town_shot++;
-                                        if(j+4 < board.size() && board[i][j+3] == ' ')
-                                        {
-                                            if(board[i][j+4] == 'w')
-                                                pawn_shot++;
-                                            if(board[i][j+4] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                    
                         if(i+1 < board.size() && i-1 >=0)
                             if(board[i+1][j] == 'b')
-                                if(board[i-1][j] == 'b'){
-                                    cannon++;
-                                    if(i-3 >= 0 && board[i-2][j] != ' ')
-                                    {
-                                        
-                                        if(board[i-3][j] == 'w')
-                                            pawn_shot++;
-                                        if(board[i-3][j] == 'W')
-                                            town_shot++;
-                                        if(i-4 >=0 && board[i-3][j] == ' ')
-                                        {
-                                            if(board[i-4][j] == 'w')
-                                                pawn_shot++;
-                                            if(board[i-4][j] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(i+3 < board.size() && board[i+2][j] != ' ')
-                                    {
-                                        
-                                        if(board[i+3][j] == 'w')
-                                            pawn_shot++;
-                                        if(board[i+3][j] == 'W')
-                                            town_shot++;
-                                        if(i+4 < board.size() && board[i+3][j] == ' ')
-                                        {
-                                            if(board[i+4][j] == 'w')
-                                                pawn_shot++;
-                                            if(board[i+4][j] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                if(board[i-1][j] == 'b')
+                                    verti_cannon++;
+                                    
                         if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
                             if(board[i-1][j+1] == 'b')
-                                if(board[i+1][j-1] == 'b'){
+                                if(board[i+1][j-1] == 'b')
                                     cannon++;
-                                    if(i-3 >= 0 && j+3 < board.size() && board[i-2][j+2] != ' ')
-                                    {
-                                        
-                                        if(board[i-3][j+3] == 'w')
-                                            pawn_shot++;
-                                        if(board[i-3][j+3] == 'W')
-                                            town_shot++;
-                                        if(i-4 >= 0 && j+4 < board.size() && board[i-3][j+3] == ' ')
-                                        {
-                                            if(board[i-4][j+4] == 'w')
-                                                pawn_shot++;
-                                            if(board[i-4][j+4] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(j-3 >= 0 && i+3 < board.size() && board[i+2][j-2] != ' ')
-                                    {
-                                        
-                                        if(board[i+3][j-3] == 'w')
-                                            pawn_shot++;
-                                        if(board[i+3][j-3] == 'W')
-                                            town_shot++;
-                                        if(j-4 >= 0 && i+4 < board.size() && board[i+3][j-3] == ' ')
-                                        {
-                                            if(board[i+4][j-4] == 'w')
-                                                pawn_shot++;
-                                            if(board[i+4][j-4] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                    
                         if(i+1 < board.size() && i-1 >=0 && j+1 < board.size() && j-1 >=0)
                             if(board[i-1][j-1] == 'b')
-                                if(board[i+1][j+1] == 'b'){
+                                if(board[i+1][j+1] == 'b')
                                     cannon++;
-                                    if(i+3 < board.size() && j+3 < board.size() && board[i+2][j+2] != ' ')
-                                    {
-                                        
-                                        if(board[i+3][j+3] == 'w')
-                                            pawn_shot++;
-                                        if(board[i+3][j+3] == 'W')
-                                            town_shot++;
-                                        if(i+4 < board.size() && j+4 < board.size() && board[i+3][j+3] == ' ')
-                                        {
-                                            if(board[i+4][j+4] == 'w')
-                                                pawn_shot++;
-                                            if(board[i+4][j+4] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                    if(i-3 >=0 && j-3 >=0 && board[i-2][j-2] != ' ')
-                                    {
-                                        
-                                        if(board[i-3][j-3] == 'w')
-                                            pawn_shot++;
-                                        if(board[i-3][j-3] == 'W')
-                                            town_shot++;
-                                        if(i-4 >=0 && j-4 >=0 && board[i-3][j-3] == ' ')
-                                        {
-                                            if(board[i-4][j-4] == 'w')
-                                                pawn_shot++;
-                                            if(board[i-4][j-4] == 'W')
-                                                town_shot++;
-                                        }
-                                    }
-                                }
+                                    
                     }
                 }
             }
         }
         vector<int> value;
+        //cout <<"\n"<<parentMessage<<"\n";
         value.push_back(pawn);
-        value.push_back(kill);
-        value.push_back(townkill);
-        value.push_back(freedom);
         value.push_back(cannon);
-        value.push_back(pawn_shot);
-        value.push_back(town_shot);
+        value.push_back(verti_cannon);
+        //cout << pawn << "\n";
+        //cout <<cannon << "\n";
+        //cout << verti_cannon << "\n";
+        //cout << "\n";
         return value;
     }
 
@@ -1300,17 +976,44 @@ class State{
     //int w_cannon = 3;
     //int w_pawn_shot = 4;
     //int w_town_shot = 10;
-
-    int a = w_townhalls*(town[0]-opptown[0])
-            +w_blocked*(town[1]-opptown[1])
-            +w_vulnerable*(town[2]-opptown[2])
-            +w_pawns*(pawn[0]-opppawn[0])
-            +w_pawn_kills*(pawn[1]-opppawn[1])
-            +w_town_kills*(pawn[2]-opppawn[2])
-            +w_pawn_moves*(pawn[3]-opppawn[3])
-            +w_cannon*(pawn[4]-opppawn[4])
-            +w_pawn_shot*(pawn[5]-opppawn[5])
-            +w_town_shot*(pawn[6]-opppawn[6]);
+    if(opptown[0] <= 2)
+        return INT_MAX;
+    int pawnaggression = pawn[0] - opppawn[0];
+    int townaggression = town[0] - opptown[0];
+    //if(town[0] ==3 && town[2] >0)
+    //    return -12000;
+    if(opptown[0] >2 && opppawn[0] < 1)
+        return INT_MIN;
+    int a = 0;
+    /* 
+    if(pawnaggression+2*townaggression > 3)
+        a = w_townhalls*(town[0]-opptown[0])
+                +w_blocked*(town[1]-opptown[1])
+                +w_vulnerable*(town[2]-opptown[2])
+                +w_pawns*(pawn[0]-2*opppawn[0])
+                +2*w_pawn_kills*(pawn[1]-opppawn[1])
+                +3*w_town_kills*(pawn[2]-opppawn[2])
+                +w_pawn_moves*(pawn[3]-opppawn[3])
+                +w_cannon*(pawn[4]-opppawn[4])
+                +2*w_pawn_shot*(pawn[5]-opppawn[5])
+                +w_town_shot*(pawn[6]-opppawn[6])
+                +40*(pawn[7]-opppawn[7]);
+    else if((pawnaggression+2*townaggression < 5))
+        a = w_townhalls*(4*town[0]-opptown[0])
+                +4*w_blocked*(town[1]-opptown[1])
+                +2*w_vulnerable*(town[2]-opptown[2])
+                +w_pawns*(pawn[0]-opppawn[0])
+                +0.5*w_pawn_kills*(pawn[1]-opppawn[1])
+                +w_town_kills*(pawn[2]-opppawn[2])
+                +w_pawn_moves*(pawn[3]-opppawn[3])
+                +w_cannon*(pawn[4]-opppawn[4])
+                +w_pawn_shot*(pawn[5]-opppawn[5])
+                +w_town_shot*(pawn[6]-opppawn[6])
+                +40*(pawn[7]-opppawn[7]);*/
+    a = w_townhalls*(town[0]-opptown[0])
+                +w_pawns*(pawn[0]-opppawn[0])
+                +w_cannon*(pawn[1]-opppawn[1])
+                +w_verti_cannon*(pawn[2]-opppawn[2]);
     //cout << town[0] << "\n";
     //cout << town[1]<< "\n";
     //cout << town[2]<< "\n";
@@ -1399,7 +1102,7 @@ class State{
     int MaxVal(int alpha,int beta,int depth, int maxDepth){
         
         if(depth>=maxDepth)return utility(true);
-
+        //ofstream ofs("cannon.txt", std::ofstream::out);
         int maxChild = INT_MIN;
         //ofstream ofs("test.txt",std::ofstream::out);
         int neighbour_count = 0;
@@ -1420,6 +1123,10 @@ class State{
                         
                         State newstate = getState(neighbours[iter]);
                         
+                        //ofs << neighbours[iter] << "\n";
+                        //ofs << blocked << "\n";
+                        //ofs << vulnerable << "\n";
+         
                         //ofs << neighbours[iter] << "\n";
                         
                         int child = newstate.MinVal(alpha,beta,depth+1,maxDepth);
@@ -1445,8 +1152,9 @@ class State{
                     
                     
             }
+            
         }
-        
+        //ofs.close(); 
         //ofs.close();
         if(neighbour_count == 0){
             //you should check if in the stalemate condition which has occured you win or loose
@@ -1454,16 +1162,16 @@ class State{
             int myhalls = getMyTownHalls();
             int opphalls = getOppnTownHalls();
             if(myhalls > opphalls){
-                maxChild = INT_MAX-1;
-                return INT_MAX-1;//since a stalemate condition
+                maxChild = -50;
+                return -50;//since a stalemate condition
             }
             else if(myhalls == opphalls){
-                maxChild = INT_MAX-2;
-                return INT_MAX - 2;//since worse than a stalemate
+                maxChild = -50;
+                return -50;//since worse than a stalemate
             }
             else{
-                maxChild = INT_MIN;
-                return INT_MIN; 
+                maxChild = -50;
+                return -50; 
             } 
         }
 
@@ -1516,16 +1224,16 @@ class State{
             int myhalls = getMyTownHalls();
             int opphalls = getOppnTownHalls();
             if(myhalls < opphalls){
-                minChild = INT_MAX-1;
-                return INT_MAX-1;//since a stalemate condition
+                minChild = -50;
+                return -50;//since a stalemate condition
             }
             else if(myhalls == opphalls){
-                minChild = INT_MAX-2;
-                return INT_MAX - 2;//since worse than a stalemate
+                minChild = -50;
+                return -50;//since worse than a stalemate
             }
             else{
-                minChild = INT_MIN;
-                return INT_MIN; 
+                minChild = -50;
+                return -50; 
             
         }
         
@@ -1566,17 +1274,11 @@ string correct_change(string input){
 
 int main(){
 
-    ifstream ifs("weight1.txt",std::ifstream::in);
+    /* ifstream ifs("weight1.txt",std::ifstream::in);
     ifs >> w_townhalls;
-    ifs >> w_blocked;
-    ifs >>  w_vulnerable;
     ifs >>  w_pawns;
-    ifs >>  w_pawn_moves;
-    ifs >>  w_pawn_kills;
-    ifs >>  w_town_kills;
     ifs >>  w_cannon;
-    ifs >>  w_pawn_shot;
-    ifs >>  w_town_shot;
+    ifs >>  w_verti_cannon;*/
 
     vector<vector<char> > board;
     int numRows = 8;
@@ -1633,6 +1335,7 @@ int main(){
     //printBoard(current_state.board,numRows,numCols);
     
     if(isBlack){
+        global_count++;
         string myMove= current_state.generateMove();
         myMove = correct_change(myMove);
         cout<<myMove<<endl;
@@ -1664,7 +1367,7 @@ int main(){
         // cout<<"About to update board"<<endl;
         
         current_state.updateBoard(opponentsMove,false);
-        
+        global_count++;
         //printBoard(current_state.board,numRows,numCols);
         //printBoard(current_state.board,numRows,numCols);
         // cout<<"Updated board"<<endl;
@@ -1674,6 +1377,7 @@ int main(){
         //     break;
         
         string myMove = current_state.generateMove();
+        global_count++;
         myMove = correct_change(myMove);
         cout<<myMove<<"\n";
         //printBoard(current_state.board,numRows,numCols);
