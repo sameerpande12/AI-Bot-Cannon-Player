@@ -1,2 +1,2 @@
-g++ cannon.cpp
-./a.out
+g++ cannon.cpp -o cannon
+./cannon
