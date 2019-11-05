@@ -587,6 +587,12 @@ class State
         }
     }
     int evaluate(){
+        WhitePawn = 0;
+        WhiteCannon = 0;
+        BlackPawn = 0;
+        BlackCannon = 0;
+        WhiteTownHall = 0;
+        BlackTownHall = 0;
         for(int i = 0;i<board.size();i++)
         {
             for(int j = 0;j<board[0].size();j++)

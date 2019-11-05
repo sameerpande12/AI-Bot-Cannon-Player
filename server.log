@@ -1,0 +1,4 @@
+{"action": "NORMAL", "meta": "", "data": "S 0 7 M 1 6"} Received from client 0
+{"action": "NORMAL", "meta": "", "data": "S 1 0 M 2 1"} Received from client 1
+{"action": "NORMAL", "meta": "", "data": "S 0 6 M 3 6"} Received from client 0
+None Received from client 1
