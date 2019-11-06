@@ -24,6 +24,8 @@ class State
     int BlackTownHall;
     int WhiteCannon;
     int BlackCannon;
+    float White_directionality;
+    float Black_directionality;
     bool isWhite;
 
         
@@ -40,6 +42,8 @@ class State
         BlackTownHall=0;
         WhiteCannon=0;
         BlackCannon=0;
+        White_directionality=0;
+        Black_directionality=0;
         isWhite = isW;
     }
 
@@ -529,10 +533,10 @@ class State
     
     pair<int,string> AlphaBetaPrune(int alpha, int beta, bool maximizingPlayer, int depth){
         countNode++;
-        
+        updateCounts();//the counts for the state are updated
         int value;
         string bestMove = "";
-        if(depth == 4)
+        if(depth == 4 || WhiteTownHall<=2 || BlackTownHall<=2)
             return pair<int,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
@@ -586,19 +590,22 @@ class State
             return pair<int,string>(value,bestMove);
         }
     }
-    int evaluate(){
+    void updateCounts(){
         WhitePawn = 0;
         WhiteCannon = 0;
         BlackPawn = 0;
         BlackCannon = 0;
         WhiteTownHall = 0;
         BlackTownHall = 0;
+        White_directionality = 0.0;
+        Black_directionality = 0.0;
         for(int i = 0;i<board.size();i++)
         {
             for(int j = 0;j<board[0].size();j++)
             {
                 if(board[i][j] == 'w'){
                     WhitePawn++;
+                    White_directionality += i;
                     if(i-1>=0 && i+1 < M && board[i-1][j] == 'w' && board[i+1][j] == 'w')
                         WhiteCannon++;
                     if(j-1>=0 && j+1 < N && board[i][j-1] == 'w' && board[i][j+1] == 'w')
@@ -610,6 +617,7 @@ class State
                 }
                 if(board[i][j] == 'b'){
                     BlackPawn++;
+                    Black_directionality +=( 7 - i);
                     if(i-1>=0 && i+1 < M && board[i-1][j] == 'b' && board[i+1][j] == 'b')
                         BlackCannon++;
                     if(j-1>=0 && j+1 < N && board[i][j-1] == 'b' && board[i][j+1] == 'b')
@@ -626,7 +634,15 @@ class State
                     BlackTownHall++;
                 }
             }
-        }  
+        }
+        if(WhitePawn > 0)White_directionality = White_directionality/WhitePawn;
+        if(BlackPawn > 0)Black_directionality = Black_directionality/BlackPawn;
+
+        
+    }
+    int evaluate(){
+        
+          
         if(WhiteTownHall <=2 && !MyPlayerIsWhite)
             return 10000;
         if(BlackTownHall <=2 && MyPlayerIsWhite)
@@ -635,12 +651,9 @@ class State
             return -10000;
         if(BlackTownHall <=2 && !MyPlayerIsWhite)
             return -10000;
-
-        int a = WhitePawn - BlackPawn 
+        int a = (WhitePawn - BlackPawn) + (int) 10*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
             + 10*(WhiteCannon - BlackCannon)
             + 100*(WhiteTownHall - BlackTownHall);
-        //printBoard();
-        //cout << a << "\n";
         if(MyPlayerIsWhite)
             return a;
         else
