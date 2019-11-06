@@ -711,16 +711,6 @@ int main(int argc, char *argv[])
     string Xt;
     string Yt;
 
-    //s.MakeMove("S 3 8 M 2 7");
-    //s.MakeMove("S 2 2 M 3 3");
-    //s.MakeMove("S 5 6 M 6 5");
-    //s.MakeMove("S 2 3 M 5 3");
-    //s.MakeMove("S 3 7 M 4 6");
-    //s.MakeMove("S 4 3 B 4 6");
-    //s.MakeMove("S 1 8 M 4 5");
-    //s.isWhite = !s.isWhite;
-    //s.printBoard();
-    
 
     if(MyPlayerIsWhite)
     {
@@ -730,25 +720,13 @@ int main(int argc, char *argv[])
         cin >> Mo;
         cin >> Xt;
         cin >> Yt;
-        //X = X.at(0)-1;
-        //Y = Y.at(0)-1;
-        //Xt = Xt.at(0)-1;
-        //Yt = Yt.at(0)-1;
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
-        //cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt << "\n";
         s.isWhite = !s.isWhite;
-        //s.printBoard();
     }
     while(true)
     {
         string move = s.AlphaBetaPrune(-200000,200000,true,0).second;
-        // cout<<"move variable stores now "<< move<<endl;
-        //string move = "S 2 6 M 2 5";
-        
-        
         s.MakeMove(move);
-        // cout<<"IIIII"<<endl;
-
         S = move.at(0);
         X = move.at(2);
         Y = move.at(4);
@@ -765,37 +743,11 @@ int main(int argc, char *argv[])
         cin >> Mo;
         cin >> Xt;
         cin >> Yt;
-        //X = X.at(0)-1;
-        //Y = Y.at(0)-1;
-        //Xt = Xt.at(0)-1;
-        //Yt = Yt.at(0)-1;
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
-        //cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt << "\n";
         s.isWhite = !s.isWhite;
         
     }
     outfile.close();
     
-    //s.printBoard();
-    //s.MakeMove("S 2 0 M 2 3");
-    //s.MakeMove("S 2 1 M 2 4");
-    //s.MakeMove("S 2 4 B 2 7");
-    //s.MakeMove("S 2 4 M 2 5");
-    //vector<string> mov = s.Moves();
-    //State s1(8,8);
-    //s1.Copy(s.board,"S 0 2 M 2 3");
-    //s1.MakeMove("S 1 2 M 3 3");
-    //for(int i =0;i<mov.size();i++)
-    //{
-     //   cout << mov[i] << "\n";
-    //}
-    /*
-    s.printBoard();
-    cout << s.WhitePawn << " " << s.BlackPawn << " " << s.WhiteTownHall << " " << s.BlackTownHall << " "
-            << s.WhiteCannon << " " << s.BlackCannon << "\n";*/
-    //cout << "\n";
-    //s.MakeMove("S 2 0 M 2 3");
-    //s.MakeMove("S 1 7 M 1 4");
-    //s.printBoard();
     return 0;
 }
