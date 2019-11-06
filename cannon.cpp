@@ -62,7 +62,8 @@ class State
                 board[1][j] = 'w';
                 board[2][j] = 'w';
             }        
-        }    
+        }
+        updateCounts();    
     }
 
     void Copy(vector<vector<char> > bboard, string move){
@@ -92,6 +93,10 @@ class State
         }
         bool surround = false;
         
+        if(BlackTownHall<=2 || WhiteTownHall<=2 || BlackPawn==0 || WhitePawn == 0){
+            cannon_town_shots.clear();
+            return cannon_town_shots;
+        }
         for(int i = 0;i<board.size();i++){
             for(int j = 0;j<board[0].size();j++){
                 if(board[i][j] == white){
@@ -485,6 +490,8 @@ class State
         else{
             board[(int)s.at(10) - 48][(int)s.at(8) - 48] = ' ';
         }  
+        updateCounts();
+        /*
         for(int i = 0;i<board.size();i++)
         {
             for(int j = 0;j<board[0].size();j++)
@@ -519,7 +526,8 @@ class State
                 }
 
             }
-        }      
+        }    
+        */  
     }
 
     void printBoard(){
@@ -533,10 +541,10 @@ class State
     
     pair<int,string> AlphaBetaPrune(int alpha, int beta, bool maximizingPlayer, int depth){
         countNode++;
-        updateCounts();//the counts for the state are updated
+        
         int value;
         string bestMove = "";
-        if(depth == 4 || WhiteTownHall<=2 || BlackTownHall<=2)
+        if(depth == 4)
             return pair<int,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
@@ -724,10 +732,13 @@ int main(int argc, char *argv[])
     while(true)
     {
         string move = s.AlphaBetaPrune(-200000,200000,true,0).second;
+        // cout<<"move variable stores now "<< move<<endl;
         //string move = "S 2 6 M 2 5";
         
         
         s.MakeMove(move);
+        // cout<<"IIIII"<<endl;
+
         S = move.at(0);
         X = move.at(2);
         Y = move.at(4);
