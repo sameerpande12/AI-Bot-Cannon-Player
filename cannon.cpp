@@ -13,6 +13,12 @@ using namespace std;
 bool MyPlayerIsWhite;
 long countNode = 0;
 ofstream outfile;
+
+int pawnWeight;
+int townHallWeight;
+int cannonWeight;
+int directionWeight;
+
 class State
 {
     public:
@@ -543,26 +549,26 @@ class State
     }
 
     
-    pair<int,string> AlphaBetaPrune(int alpha, int beta, bool maximizingPlayer, int depth){
+    pair<float,string> AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth){
         countNode++;
         
-        int value;
+        float value;
         string bestMove = "";
         if(depth == 4)
-            return pair<int,string>(evaluate(),bestMove);
+            return pair<float,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
-            return pair<int,string>(evaluate(),bestMove);
+            return pair<float,string>(evaluate(),bestMove);
         if(maximizingPlayer)
         {
-            value = -2000000;
+            float value = (float)INT32_MIN;
             for(int i = 0;i<children.size();i++)
             {
                 State* s = new State(M,N, !isWhite);
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
                 
-                int current = (*s).AlphaBetaPrune(alpha, beta,false,depth+1).first;
+                float current = (*s).AlphaBetaPrune(alpha, beta,false,depth+1).first;
                 if(current > value){
                     value = current;
                     bestMove = children[i];
@@ -575,18 +581,18 @@ class State
                 }
                 delete s;
             }
-            return pair<int,string>(value,bestMove);
+            return pair<float,string>(value,bestMove);
         }
         else
         {
-            value = 2000000;
+            value = (float)INT32_MAX;
             for(int i = 0;i<children.size();i++)
             {
                 State* s = new State(M,N,!isWhite);
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
                 
-                int current = (*s).AlphaBetaPrune(alpha, beta,true,depth+1).first;
+                float current = (*s).AlphaBetaPrune(alpha, beta,true,depth+1).first;
                 if(current < value){
                     value = current;
                     bestMove = children[i];
@@ -599,7 +605,7 @@ class State
                 }
                 delete s;
             }
-            return pair<int,string>(value,bestMove);
+            return pair<float,string>(value,bestMove);
         }
     }
     void updateCounts(){
@@ -652,26 +658,26 @@ class State
 
         
     }
-    int evaluate(){
+    float evaluate(){
         
           
-        if(WhiteTownHall <=2 && !MyPlayerIsWhite)
-            return 10000;
-        if(BlackTownHall <=2 && MyPlayerIsWhite)
-            return 10000;
-        if(WhiteTownHall <=2 && MyPlayerIsWhite)
-            return -10000;
-        if(BlackTownHall <=2 && !MyPlayerIsWhite)
-            return -10000;
+        // if(WhiteTownHall <=2 && !MyPlayerIsWhite)
+        //     return INT32_MAX/2;
+        // if(BlackTownHall <=2 && MyPlayerIsWhite)
+        //     return INT32_MAX/2;
+        // if(WhiteTownHall <=2 && MyPlayerIsWhite)
+        //     return -INT32_MIN/2;
+        // if(BlackTownHall <=2 && !MyPlayerIsWhite)
+        //     return -INT32_MIN/2;
 
         //if you are in a losing situation then you might want to have a draw 
         //if you are in a winning situation you might want to avoid a draw
 
         // if going forward means you are going to kill yourself then you don't want to do it right ? 
 
-        int a = (WhitePawn - BlackPawn) + (int) 10*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
+        float a = (WhitePawn - BlackPawn) + (int) 10*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
             + 10*(WhiteCannon - BlackCannon)
-            + 500*(WhiteTownHall - BlackTownHall);
+            + 1000*(WhiteTownHall - BlackTownHall);
         if(MyPlayerIsWhite)
             return a;
         else
@@ -723,10 +729,21 @@ int main(int argc, char *argv[])
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
         s.isWhite = !s.isWhite;
     }
+    int expected=0;
+    int observed=0;
     while(true)
     {
-        string move = s.AlphaBetaPrune(-200000,200000,true,0).second;
+        // if(observed < expected){
+        //     //it means that your function is overshooting
+        //     //it means you have to decrease it
+        // }
+        // else{
+
+        // }
+        string move = s.AlphaBetaPrune(INT32_MIN,INT32_MAX,true,0).second;
         s.MakeMove(move);
+        expected = s.evaluate();
+
         S = move.at(0);
         X = move.at(2);
         Y = move.at(4);
@@ -745,6 +762,7 @@ int main(int argc, char *argv[])
         cin >> Yt;
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
         s.isWhite = !s.isWhite;
+        observed = s.evaluate();
         
     }
     outfile.close();
