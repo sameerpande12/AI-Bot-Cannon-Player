@@ -12,6 +12,7 @@
 using namespace std;
 bool MyPlayerIsWhite;
 long countNode = 0;
+ofstream outfile;
 class State
 {
     public:
@@ -466,9 +467,10 @@ class State
             }
             
         }
+        cannon_town_shots.insert(cannon_town_shots.end(), pawn_town_kills.begin(), pawn_town_kills.end());
         cannon_town_shots.insert(cannon_town_shots.end(), cannon_shots.begin(), cannon_shots.end());
         cannon_town_shots.insert(cannon_town_shots.end(), cannon_moves.begin(), cannon_moves.end());
-        cannon_town_shots.insert(cannon_town_shots.end(), pawn_town_kills.begin(), pawn_town_kills.end());
+        
         cannon_town_shots.insert(cannon_town_shots.end(), pawn_kills.begin(), pawn_kills.end());
         cannon_town_shots.insert(cannon_town_shots.end(), pawn_moves.begin(), pawn_moves.end());
         cannon_town_shots.insert(cannon_town_shots.end(), cannon_blank_shots.begin(), cannon_blank_shots.end());
@@ -530,12 +532,14 @@ class State
         */  
     }
 
-    void printBoard(){
+    string printBoard(){
+        string ans;
         for(int i = 0;i<M;i++){
             for(int j = 0;j<N;j++)
-                cout << board[i][j] << " ";
-            cout << "\n";
+                ans = ans + board[i][j] + " ";
+            ans += "\n";
         }
+        return ans;
     }
 
     
@@ -659,9 +663,15 @@ class State
             return -10000;
         if(BlackTownHall <=2 && !MyPlayerIsWhite)
             return -10000;
+
+        //if you are in a losing situation then you might want to have a draw 
+        //if you are in a winning situation you might want to avoid a draw
+
+        // if going forward means you are going to kill yourself then you don't want to do it right ? 
+
         int a = (WhitePawn - BlackPawn) + (int) 10*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
             + 10*(WhiteCannon - BlackCannon)
-            + 100*(WhiteTownHall - BlackTownHall);
+            + 500*(WhiteTownHall - BlackTownHall);
         if(MyPlayerIsWhite)
             return a;
         else
@@ -674,7 +684,7 @@ class State
 
 int main(int argc, char *argv[])
 {
-    ofstream outfile;
+    
     outfile.open("file.txt");
     int M;
     int N;
@@ -764,6 +774,7 @@ int main(int argc, char *argv[])
         s.isWhite = !s.isWhite;
         
     }
+    outfile.close();
     
     //s.printBoard();
     //s.MakeMove("S 2 0 M 2 3");
