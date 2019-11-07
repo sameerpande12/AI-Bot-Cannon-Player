@@ -730,13 +730,23 @@ int main(int argc, char *argv[])
     }
     
     float isWhite = 1;
-    if(MyPlayerIsWhite)isWhite = -1;
+    if(!MyPlayerIsWhite)isWhite = -1;
 
-        
-        ofstream outfile;
-        outfile.open("weights1.txt");
-        outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
-        outfile.close();
+    float learning_rate = 0;
+
+    ifstream paramFile;
+    paramFile.open("param1.txt");
+    paramFile>>learning_rate;
+    paramFile>>pawnWeight;
+    paramFile>>directionWeight;
+    paramFile>>cannonWeight;
+    paramFile>>townHallWeight;
+
+
+    ofstream outfile;
+    outfile.open("weights1.txt");
+    outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
+    outfile.close();
 
     while(true)
     {
@@ -746,7 +756,7 @@ int main(int argc, char *argv[])
         float backed_up_value = pruned_state.first;
         float initial_value = s.evaluate();
         float delta = backed_up_value - initial_value ;
-        float learning_rate = 1;
+        
 
         float delta_sign = 1;
         if(delta < 0)delta_sign = -1;
