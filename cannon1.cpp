@@ -766,7 +766,7 @@ int main(int argc, char *argv[])
         cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
         directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
         townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
-        outfile.open("weights.txt",std::ios_base::app);
+        outfile.open("weights1.txt",std::ios_base::app);
         outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
         outfile.close();
         s.MakeMove(move);

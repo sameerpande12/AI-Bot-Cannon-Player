@@ -1,2 +1,2 @@
-g++ cannon_2.cpp -o cannon2
+g++ cannon2.cpp -o cannon2
 ./cannon2

@@ -746,7 +746,7 @@ int main(int argc, char *argv[])
         float backed_up_value = pruned_state.first;
         float initial_value = s.evaluate();
         float delta = backed_up_value - initial_value ;
-        float learning_rate = 1;
+        float learning_rate = 0;
 
         float delta_sign = 1;
         if(delta < 0)delta_sign = -1;
@@ -766,7 +766,7 @@ int main(int argc, char *argv[])
         cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
         directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
         townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
-        outfile.open("weights.txt",std::ios_base::app);
+        outfile.open("weights2.txt",std::ios_base::app);
         outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
         outfile.close();
         s.MakeMove(move);
