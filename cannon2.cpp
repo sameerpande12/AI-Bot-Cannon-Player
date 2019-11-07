@@ -734,7 +734,7 @@ int main(int argc, char *argv[])
 
         
         ofstream outfile;
-        outfile.open("weights1.txt");
+        outfile.open("weights2.txt");
         outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
         outfile.close();
 
