@@ -62,7 +62,7 @@ generateParamFile('param2.txt',0,baseWeights)## We intend to keep run2 stable al
 
 
 # run1.sh plays black
-for gameid in range(1,3):
+for gameid in range(1,101):
     command='mkdir -p Logs/Game_{}/Run1'.format(gameid)
     execute(command)
     command='mkdir -p Logs/Game_{}/Run2'.format(gameid)
@@ -73,7 +73,7 @@ for gameid in range(1,3):
     print(command)
     server_process = execute(command)
 
-    command=' python client.py 0.0.0.0 10000 run1.sh -mode GUI'
+    command=' python client.py 0.0.0.0 10000 run1.sh '
     print(command)
     execute(command)
 
@@ -99,7 +99,7 @@ for gameid in range(1,3):
     print(command)
     server_process = execute(command)
     
-    command=' python client.py 0.0.0.0 10000 run2.sh -mode GUI'
+    command=' python client.py 0.0.0.0 10000 run2.sh '
     print(command)
     execute(command)
     
