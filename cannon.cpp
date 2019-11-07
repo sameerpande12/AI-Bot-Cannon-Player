@@ -12,12 +12,13 @@
 using namespace std;
 bool MyPlayerIsWhite;
 long countNode = 0;
-ofstream outfile;
 
-int pawnWeight;
-int townHallWeight;
-int cannonWeight;
-int directionWeight;
+
+float pawnWeight=1;
+float directionWeight=10;
+float cannonWeight=10;
+float townHallWeight=1000;
+
 
 class State
 {
@@ -675,9 +676,9 @@ class State
 
         // if going forward means you are going to kill yourself then you don't want to do it right ? 
 
-        float a = (WhitePawn - BlackPawn) + (int) 10*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
-            + 10*(WhiteCannon - BlackCannon)
-            + 1000*(WhiteTownHall - BlackTownHall);
+        float a = (WhitePawn - BlackPawn) + directionWeight*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
+            + cannonWeight*(WhiteCannon - BlackCannon)
+            + townHallWeight*(WhiteTownHall - BlackTownHall);
         if(MyPlayerIsWhite)
             return a;
         else
@@ -691,7 +692,6 @@ class State
 int main(int argc, char *argv[])
 {
     
-    outfile.open("file.txt");
     int M;
     int N;
     int white;
@@ -706,8 +706,7 @@ int main(int argc, char *argv[])
         MyPlayerIsWhite = true;
     else
         MyPlayerIsWhite = false;
-    outfile << MyPlayerIsWhite << " ";
-    outfile.close();
+    
     s.Initialise();
 
     string S;
@@ -729,20 +728,59 @@ int main(int argc, char *argv[])
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
         s.isWhite = !s.isWhite;
     }
-    int expected=0;
-    int observed=0;
+    
+    float isWhite = 1;
+    if(MyPlayerIsWhite)isWhite = -1;
+
+        
+        ofstream outfile;
+        outfile.open("weights.txt");
+        outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
+        outfile.close();
+
     while(true)
     {
         // if(observed < expected){
         //     //it means that your function is overshooting
-        //     //it means you have to decrease it
+        //     //it means you have to decrease positive weights
+        //     cannonWeight = cannonWeight - 0.3 * (s.WhiteCannon - s.BlackCannon)*isWhite;
+        //     directionWeight = directionWeight - 0.3 * (s.White_directionality - s.Black_directionality)*isWhite;
         // }
-        // else{
+        // else if (expected < observed){
+        //     cannonWeight = cannonWeight - 0.3 * (s.WhiteCannon - s.BlackCannon)*isWhite;
+        //     directionWeight = directionWeight - 0.3 * (s.White_directionality - s.Black_directionality)*isWhite;
+        // }
 
+        pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0);  
+        string move = pruned_state.second;
+        float backed_up_value = pruned_state.first;
+        float initial_value = s.evaluate();
+        float delta = backed_up_value - initial_value ;
+        float learning_rate = 0.001;
+
+        float delta_sign = 1;
+        if(delta < 0)delta_sign = -1;
+        // if(delta > 0){
+        //     //we need to increase the weights of our positive contributors
+            
+        //     // if (s.WhiteCannon - s.BlackCannon)*isWhite > 0; then we have to increase the cannonWeights
+            
+        //     pawnWeight = pawnWeight + learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
+        //     cannonWeight = cannonWeight + learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
+        //     directionWeight = directionWeight + learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
+        //     townHallWeight = townHallWeight + learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
+            
         // }
-        string move = s.AlphaBetaPrune(INT32_MIN,INT32_MAX,true,0).second;
+
+        pawnWeight = pawnWeight + delta_sign * learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
+        cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
+        directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
+        townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
+        outfile.open("weights.txt",std::ios_base::app);
+        outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
+        outfile.close();
         s.MakeMove(move);
-        expected = s.evaluate();
+        
 
         S = move.at(0);
         X = move.at(2);
@@ -762,10 +800,10 @@ int main(int argc, char *argv[])
         cin >> Yt;
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
         s.isWhite = !s.isWhite;
-        observed = s.evaluate();
+        
         
     }
-    outfile.close();
+    // outfile.close();
     
     return 0;
 }
