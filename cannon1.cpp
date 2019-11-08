@@ -36,7 +36,8 @@ class State
     float Black_directionality;
     bool isWhite;
     int maxTownHalls;
-
+    int blockedWhitePawn;
+    int blockedBlackPawn;
         
     State(int Mm, int Nn, bool isW)
     {
@@ -53,6 +54,8 @@ class State
         BlackCannon=0;
         White_directionality=0;
         Black_directionality=0;
+        blockedBlackPawn=0;
+        blockedBlackPawn=0;
         isWhite = isW;
         maxTownHalls = board[0].size()/2;
     }
@@ -103,7 +106,7 @@ class State
         }
         bool surround = false;
         
-        if(BlackTownHall<=(maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || BlackPawn==0 || WhitePawn == 0){
+        if(BlackTownHall<=(maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || (BlackPawn-blockedBlackPawn)==0 || (WhitePawn-blockedWhitePawn)== 0){
             cannon_town_shots.clear();
             return cannon_town_shots;
         }
@@ -620,6 +623,8 @@ class State
         BlackTownHall = 0;
         White_directionality = 0.0;
         Black_directionality = 0.0;
+        blockedBlackPawn=0;
+        blockedWhitePawn=0;
         for(int i = 0;i<board.size();i++)
         {
             for(int j = 0;j<board[0].size();j++)
@@ -635,10 +640,38 @@ class State
                         WhiteCannon++;
                     if(i-1>=0 && i+1 < M && j-1>=0 && j+1 < N && board[i-1][j+1] == 'w' && board[i+1][j-1] == 'w')
                         WhiteCannon++;
+                    try{
+                        if(i==M-1){//check if it is blocked
+                        //in this state when the white soldier has reached the end -> it will be blocked -if cannot retreat, if no townhall adjacent
+                            bool isBlocked=true;
+                            if( isBlocked && j-1>=0 && board[i][j-1]=='B')
+                                isBlocked=false;
+                            
+                            if( isBlocked && j+1 < N && board[i][j+1]=='B')
+                                isBlocked=false;
+                            
+                            if( isBlocked && j-1>=0 && board[i][j-1]=='b'){
+                                
+                                if( board[i-2][j] != 'w')isBlocked=false;
+                                if( j-2>=0 && board[i-2][j-2] !='w')isBlocked=false;
+                                if( j+2<N  && board[i-2][j+2] !='w')isBlocked=false;
+                            }
+
+                            if( isBlocked && j+1 < N && board[i][j+1]=='b'){
+                                if( board[i-2][j] != 'w')isBlocked=false;
+                                if( j-2>=0 && board[i-2][j-2] !='w')isBlocked=false;
+                                if( j+2<N  && board[i-2][j+2] !='w')isBlocked=false;
+                            }
+
+                            if(isBlocked)blockedWhitePawn++;   
+
+                        }
+                    }
+                    catch(exception e){;}
                 }
                 if(board[i][j] == 'b'){
                     BlackPawn++;
-                    Black_directionality +=( 7 - i);
+                    Black_directionality +=( board.size()-1 - i);
                     if(i-1>=0 && i+1 < M && board[i-1][j] == 'b' && board[i+1][j] == 'b')
                         BlackCannon++;
                     if(j-1>=0 && j+1 < N && board[i][j-1] == 'b' && board[i][j+1] == 'b')
@@ -647,6 +680,26 @@ class State
                         BlackCannon++;
                     if(i-1>=0 && i+1 < M && j-1>=0 && j+1 < N && board[i-1][j+1] == 'b' && board[i+1][j-1] == 'b')
                         BlackCannon++;
+                    try{
+                        if(i==0){
+                            bool isBlocked = true;
+
+                            if(isBlocked && j-1 >= 0 && board[i][j-1]=='W')isBlocked=false;
+                            if(isBlocked && j+1 < N  && board[i][j+1]=='W')isBlocked=false;
+                            if(isBlocked && j-1 >=0 && board[i][j-1]=='w'){
+                                if(board[2][j]!='b')isBlocked=false;
+                                if(j-2>=0 && board[2][j-2]!='b')isBlocked=false;
+                                if(j+2<N && board[2][j+2]!='b')isBlocked=false;
+                            }
+                            if(isBlocked && j+1<N && board[i][j+1]=='w'){
+                                if(board[2][j]!='b')isBlocked=false;
+                                if(j-2>=0 && board[2][j-2]!='b')isBlocked=false;
+                                if(j+2<N && board[2][j+2]!='b')isBlocked=false;
+                            }
+                            if(isBlocked)blockedBlackPawn++;
+                        }
+                    }
+                    catch(exception e){;}
                 }
                 if(board[i][j] == 'W'){
                     WhiteTownHall++;
