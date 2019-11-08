@@ -10,7 +10,7 @@ import math
 import numpy as np
 import sys
 import subprocess
-
+import glob
 
 
 
@@ -38,7 +38,7 @@ def getScore(server_log):
 
 
 def execute(command):
-    return subprocess.Popen([command],shell=True,executable='/bin/bash')
+    return subprocess.Popen([command],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,executable='/bin/bash')
 
 def getWeights(weightFile):
     weights = subprocess.check_output('tail -1 {}'.format(weightFile),shell=True,executable='/bin/bash')
@@ -55,10 +55,61 @@ def generateParamFile(paramFile,lr,weights):
     file.write(line)
     file.close()
 
-gameid = 0
-baseWeights = [1,10,10,1000]
-generateParamFile('param1.txt',0.1,[1,6,11,1000])
-generateParamFile('param2.txt',0,baseWeights)## We intend to keep run2 stable always
+games = (glob.glob("Logs/Game_*"))
+games = [ int((game.split('_'))[-1]) for game in games]
+games.sort()
+if len(games)==0:
+    gameid = 1
+else:
+    gameid = games[-1]+1
+
+if len(games) > 1:
+    last_game = games[-2]
+else:
+    last_game = 0
+
+while last_game > 0:
+    print("HI")
+    runs = glob.glob("Logs/Game_{}/Run*".format(last_game))
+    if(len(runs)==2):
+        break
+    last_game = last_game -1
+
+print(gameid, last_game)
+
+if gameid == 1 or last_game==0:
+    baseWeights = [1,10,10,1000]
+    generateParamFile('param1.txt',0.1,[1,6,11,1000])
+    generateParamFile('param2.txt',0,baseWeights)## We intend to keep run2 stable always
+else:
+    g1_score_1,g1_score_2 = getScore('server{}_1.log'.format(last_game))
+    g2_score_2,g2_score_1 = getScore('server{}_2.log'.format(last_game))
+    score_1 = g1_score_1 + g2_score_1
+    score_2 = g1_score_2 + g2_score_2
+
+    if score_1 > score_2:
+        if g1_score_1 > g2_score_1:
+            weightFile = 'Logs/Game_{}/Run1/weights1.txt'.format(last_game)
+            baseWeights = 'Logs/Game_{}/Run1/weights2.txt'.format(last_game)
+        else:
+            weightFile = 'Logs/Game_{}/Run2/weights1.txt'.format(last_game)
+            baseWeights = 'Logs/Game_{}/Run2/weights2.txt'.format(last_game)
+        
+        weights = getWeights(weightFile)
+        baseWeights = getWeights(weightFile)
+        generateParamFile('param2.txt',0,weights)# use winning weights for static
+        generateParamFile('param1.txt',0.1,baseWeights)#start dynamic from previous base weights
+        baseWeights = weights
+
+    else:
+        if g1_score_1 > g2_score_1:
+            weightFile = 'Logs/Game_{}/Run1/weights1.txt'.format(last_game)
+        else:
+            weightFile = 'Logs/Game_{}/Run2/weights1.txt'.format(last_game)
+        weights = getWeights(weightFile)
+        generateParamFile('param1.txt',0.1,weights)
+        generateParamFile('param2.txt',0,baseWeights)
+
 
 
 # run1.sh plays black
