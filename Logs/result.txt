@@ -7,3 +7,7 @@
 7:Static, Score 6.03 4.01 4.01 6.03
 8:Static, Score 6.03 4.01 4.01 6.03
 9:Static, Score 6.03 4.01 4.01 6.03
+10:Static, Score 6.03 4.01 4.01 6.03
+11:Static, Score 6.03 4.01 4.01 6.03
+12:Static, Score 6.03 4.01 4.01 6.03
+13:Static, Score 6.03 4.01 4.01 6.03
