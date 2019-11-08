@@ -1,0 +1,4 @@
+1. We need to include all the stalemate conditions - Like when we get a 10 and when we get an 8
+2. We need to find a way to kill the townHall when we see a clear passage -> include some kind of threat score for pawn -> number of ways it can get killed
+3. In the end situations we need to make pawns find a pathway to kill the townhall
+4. INSTEAD OF MAKING BLACKPAWN=0 or WHITEPAWN=0 check MOVABLEBLACKPAWN=0 or MOVABLEWHITEPAWN
