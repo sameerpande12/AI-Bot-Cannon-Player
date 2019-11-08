@@ -11,7 +11,7 @@ import numpy as np
 import sys
 import subprocess
 import glob
-
+import sys
 
 
 def getScore(server_log):
@@ -63,13 +63,12 @@ if len(games)==0:
 else:
     gameid = games[-1]+1
 
-if len(games) > 1:
-    last_game = games[-2]
+if len(games) >= 1:
+    last_game = games[-1]
 else:
     last_game = 0
 
 while last_game > 0:
-    print("HI")
     runs = glob.glob("Logs/Game_{}/Run*".format(last_game))
     if(len(runs)==2):
         break
@@ -82,21 +81,21 @@ if gameid == 1 or last_game==0:
     generateParamFile('param1.txt',0.1,[1,6,11,1000])
     generateParamFile('param2.txt',0,baseWeights)## We intend to keep run2 stable always
 else:
-    g1_score_1,g1_score_2 = getScore('server{}_1.log'.format(last_game))
-    g2_score_2,g2_score_1 = getScore('server{}_2.log'.format(last_game))
+    g1_score_1,g1_score_2 = getScore('Logs/Game_{}/Run1/server{}_1.log'.format(last_game,last_game))
+    g2_score_2,g2_score_1 = getScore('Logs/Game_{}/Run2/server{}_2.log'.format(last_game,last_game))
     score_1 = g1_score_1 + g2_score_1
     score_2 = g1_score_2 + g2_score_2
 
     if score_1 > score_2:
         if g1_score_1 > g2_score_1:
             weightFile = 'Logs/Game_{}/Run1/weights1.txt'.format(last_game)
-            baseWeights = 'Logs/Game_{}/Run1/weights2.txt'.format(last_game)
+            baseWeightFile = 'Logs/Game_{}/Run1/weights2.txt'.format(last_game)
         else:
             weightFile = 'Logs/Game_{}/Run2/weights1.txt'.format(last_game)
-            baseWeights = 'Logs/Game_{}/Run2/weights2.txt'.format(last_game)
+            baseWeightFile = 'Logs/Game_{}/Run2/weights2.txt'.format(last_game)
         
         weights = getWeights(weightFile)
-        baseWeights = getWeights(weightFile)
+        baseWeights = getWeights(baseWeightFile)
         generateParamFile('param2.txt',0,weights)# use winning weights for static
         generateParamFile('param1.txt',0.1,baseWeights)#start dynamic from previous base weights
         baseWeights = weights
@@ -104,16 +103,23 @@ else:
     else:
         if g1_score_1 > g2_score_1:
             weightFile = 'Logs/Game_{}/Run1/weights1.txt'.format(last_game)
+            baseWeightFile = 'Logs/Game_{}/Run1/weights1.txt'.format(last_game)
         else:
             weightFile = 'Logs/Game_{}/Run2/weights1.txt'.format(last_game)
+            baseWeightFile = 'Logs/Game_{}/Run2/weights1.txt'.format(last_game)
         weights = getWeights(weightFile)
+        baseWeights=getWeights(baseWeightFile)
         generateParamFile('param1.txt',0.1,weights)
         generateParamFile('param2.txt',0,baseWeights)
 
 
-
+numGames = 100
+try:
+    numGames = int(sys.argv[1])
+except Exception as e:
+    print(numGames)
+for gameid in range(gameid,gameid + numGames):
 # run1.sh plays black
-for gameid in range(1,101):
     command='mkdir -p Logs/Game_{}/Run1'.format(gameid)
     execute(command)
     command='mkdir -p Logs/Game_{}/Run2'.format(gameid)
