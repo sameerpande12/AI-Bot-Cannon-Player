@@ -35,6 +35,7 @@ class State
     float White_directionality;
     float Black_directionality;
     bool isWhite;
+    int maxTownHalls;
 
         
     State(int Mm, int Nn, bool isW)
@@ -53,6 +54,7 @@ class State
         White_directionality=0;
         Black_directionality=0;
         isWhite = isW;
+        maxTownHalls = board[0].size()/2;
     }
 
     void Initialise()
@@ -101,7 +103,7 @@ class State
         }
         bool surround = false;
         
-        if(BlackTownHall<=2 || WhiteTownHall<=2 || BlackPawn==0 || WhitePawn == 0){
+        if(BlackTownHall<= (maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || BlackPawn==0 || WhitePawn == 0){
             cannon_town_shots.clear();
             return cannon_town_shots;
         }
