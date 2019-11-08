@@ -637,7 +637,7 @@ class State
                 }
                 if(board[i][j] == 'b'){
                     BlackPawn++;
-                    Black_directionality +=( 7 - i);
+                    Black_directionality +=( board.size()-1 - i);
                     if(i-1>=0 && i+1 < M && board[i-1][j] == 'b' && board[i+1][j] == 'b')
                         BlackCannon++;
                     if(j-1>=0 && j+1 < N && board[i][j-1] == 'b' && board[i][j+1] == 'b')
