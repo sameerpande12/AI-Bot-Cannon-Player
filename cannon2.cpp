@@ -19,7 +19,7 @@ float directionWeight=10;
 float cannonWeight=10;
 float townHallWeight=1000;
 
-int maxDepth=5;
+// int maxDepth=5;
 
 class State
 {
@@ -571,20 +571,12 @@ class State
     }
 
     
-    pair<float,string> AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth){
+    pair<float,string> AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth,int maxDepth){
         countNode++;
         
         float value;
         string bestMove = "";
-        int limit_depth = 5;
-        if(MyPlayerIsWhite && WhitePawn <= 3*N/4+1){
-            limit_depth = 6;
-        }
-        if(MyPlayerIsWhite && WhitePawn <= 3*N/4-1){
-            limit_depth = 7;
-        }
-
-        if(depth == limit_depth)
+        if(depth == maxDepth)
             return pair<float,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
@@ -598,7 +590,7 @@ class State
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
                 
-                float current = (*s).AlphaBetaPrune(alpha, beta,false,depth+1).first;
+                float current = (*s).AlphaBetaPrune(alpha, beta,false,depth+1,maxDepth).first;
                 if(current > value){
                     value = current;
                     bestMove = children[i];
@@ -622,7 +614,7 @@ class State
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
                 
-                float current = (*s).AlphaBetaPrune(alpha, beta,true,depth+1).first;
+                float current = (*s).AlphaBetaPrune(alpha, beta,true,depth+1,maxDepth).first;
                 if(current < value){
                     value = current;
                     bestMove = children[i];
@@ -754,6 +746,17 @@ class State
         //if you are in a winning situation you might want to avoid a draw
 
         // if going forward means you are going to kill yourself then you don't want to do it right ? 
+        if(WhiteTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
+            return townHallWeight * 4;
+        
+        if( BlackTownHall <= maxTownHalls-2 && MyPlayerIsWhite)
+            return townHallWeight * 4;
+        
+        if(WhiteTownHall <= maxTownHalls -2 && MyPlayerIsWhite)
+            return -townHallWeight* 4;
+        if( BlackTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
+            return -townHallWeight * 4;
+            
 
         float a = (WhitePawn - BlackPawn) + directionWeight*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
             + cannonWeight*(WhiteCannon - BlackCannon)
@@ -781,7 +784,7 @@ int main(int argc, char *argv[])
     cin >> timeleft;
     timeleft = 0.92 * timeleft;// to account for error in time measurement
 
-    maxDepth = 5;
+    // maxDepth = 5;
     State s(M,N,false);
     if(white == 2)
         MyPlayerIsWhite = true;
@@ -829,12 +832,13 @@ int main(int argc, char *argv[])
     outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
     outfile.close();
 
+    int maxDepth = 4;
     int mymoves = 0;
     while(true)
     {
         if(mymoves >= 0){
             clock_t begin = clock();
-            pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0);  
+            pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,maxDepth);  
             string move = pruned_state.second;
             s.MakeMove(move);
 
@@ -859,7 +863,7 @@ int main(int argc, char *argv[])
             pawnWeight = pawnWeight + delta_sign * learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
             cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
             directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
-            townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
+            // townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
             outfile.open("weights2.txt",std::ios_base::app);
             outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
             outfile.close();
