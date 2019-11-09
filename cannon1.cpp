@@ -106,7 +106,7 @@ class State
         }
         bool surround = false;
         
-        if(BlackTownHall<=(maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || (BlackPawn-blockedBlackPawn)==0 || (WhitePawn-blockedWhitePawn)== 0){
+        if(BlackTownHall<=(maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || ( !isWhite && (BlackPawn-blockedBlackPawn)==0) ||  ( isWhite && (WhitePawn-blockedWhitePawn)== 0)){
             cannon_town_shots.clear();
             return cannon_town_shots;
         }
