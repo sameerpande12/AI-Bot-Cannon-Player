@@ -576,7 +576,15 @@ class State
         
         float value;
         string bestMove = "";
-        if(depth == maxDepth)
+        int limit_depth = 5;
+        if(MyPlayerIsWhite && WhitePawn <= 3*N/4+1){
+            limit_depth = 6;
+        }
+        if(MyPlayerIsWhite && WhitePawn <= 3*N/4-1){
+            limit_depth = 7;
+        }
+
+        if(depth == limit_depth)
             return pair<float,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
@@ -781,7 +789,7 @@ int main(int argc, char *argv[])
         MyPlayerIsWhite = false;
     
     s.Initialise();
-
+    int myPawns = 3 * s.BlackTownHall;
     string S;
     string X;
     string Y;
@@ -821,51 +829,60 @@ int main(int argc, char *argv[])
     outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
     outfile.close();
 
+    int mymoves = 0;
     while(true)
     {
-        clock_t begin = clock();
-        pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0);  
-        string move = pruned_state.second;
-        s.MakeMove(move);
+        if(mymoves >= 0){
+            clock_t begin = clock();
+            pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0);  
+            string move = pruned_state.second;
+            s.MakeMove(move);
 
-        S = move.at(0);
-        X = move.at(2);
-        Y = move.at(4);
-        Mo = move.at(6);
-        Xt = move.at(8);
-        Yt = move.at(10);
-        cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
-        
-        clock_t end = clock();
-        timeleft = timeleft - (end - begin)/CLOCKS_PER_SEC;
-
-        float backed_up_value = pruned_state.first;
-        float initial_value = s.evaluate();
-        float delta = backed_up_value - initial_value ;
-        
-
-        float delta_sign = 1;
-        if(delta < 0)delta_sign = -1;
-        // if(delta > 0){
-        //     //we need to increase the weights of our positive contributors
+            S = move.at(0);
+            X = move.at(2);
+            Y = move.at(4);
+            Mo = move.at(6);
+            Xt = move.at(8);
+            Yt = move.at(10);
+            cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
             
-        //     // if (s.WhiteCannon - s.BlackCannon)*isWhite > 0; then we have to increase the cannonWeights
-            
-        //     pawnWeight = pawnWeight + learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
-        //     cannonWeight = cannonWeight + learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
-        //     directionWeight = directionWeight + learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
-        //     townHallWeight = townHallWeight + learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
-            
-        // }
+            clock_t end = clock();
+            timeleft = timeleft - (end - begin)/CLOCKS_PER_SEC;
 
-        pawnWeight = pawnWeight + delta_sign * learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
-        cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
-        directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
-        townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
-        outfile.open("weights1.txt",std::ios_base::app);
-        outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
-        outfile.close();
-        
+            float backed_up_value = pruned_state.first;
+            float initial_value = s.evaluate();
+            float delta = backed_up_value - initial_value ;
+            
+
+            float delta_sign = 1;
+            if(delta < 0)delta_sign = -1;
+            pawnWeight = pawnWeight + delta_sign * learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
+            cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
+            directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
+            townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
+            outfile.open("weights1.txt",std::ios_base::app);
+            outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
+            outfile.close();
+        }
+        else{
+            string move;
+            if(MyPlayerIsWhite){
+                if(mymoves==0)
+                    move = "S "+to_string(N-3)+" 0 M "+to_string(N-2)+" 1\n";
+                else
+                    move = "S 3 0 M 2 1\n";
+            }
+            else{
+                if(mymoves == 0)
+                    move = "S 2 "+to_string(M-1)+" M 1 "+to_string(M-2)+"\n";
+                else
+                    move = "S "+to_string(N-4)+" "+to_string(M-1) + " M "+to_string(N-3)+" "+to_string(M-2)+"\n";
+            }
+            mymoves++;
+            s.MakeMove(move);
+            cout<<move;
+
+        }
 
         
         s.isWhite = !s.isWhite;
