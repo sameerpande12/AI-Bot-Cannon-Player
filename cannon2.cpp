@@ -125,7 +125,7 @@ class State
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j) + " " + to_string(i+1));
                             }
                             else if(board[i+1][j] == Black){
-                                surround = true;
+                                //surround = true;
                                 pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j) + " " + to_string(i+1));
                             }
                         }
@@ -138,6 +138,10 @@ class State
                                 surround = true;
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i+1));
                             }
+                            else if(board[i+1][j+1] == Black){
+                                //surround = true;
+                                pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i+1));
+                            }
                         }
 
                         if(i+1 < M && j-1 >=0){
@@ -148,6 +152,10 @@ class State
                                 surround = true;
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i+1));           
                             }
+                            else if(board[i+1][j-1] == Black){
+                                //surround = true;
+                                pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i+1));
+                            }
                         }
 
                         if(j+1 < M){
@@ -156,7 +164,7 @@ class State
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
                             }
                             else if(board[i][j+1] == Black){
-                                surround = true;
+                                //surround = true;
                                 pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
                             }
                         }
@@ -167,7 +175,7 @@ class State
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i));           
                             }
                             else if(board[i][j-1] == Black){
-                                surround = true;
+                                //surround = true;
                                 pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i));           
                             }
                         }
@@ -209,7 +217,7 @@ class State
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j) + " " + to_string(i-1));
                             }
                             else if(board[i-1][j] == Black){
-                                surround = true;
+                                //surround = true;
                                 pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j) + " " + to_string(i-1));
                             }
                         }
@@ -222,6 +230,10 @@ class State
                                 surround = true;
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i-1));
                             }
+                            else if(board[i-1][j+1] == Black){
+                                //surround = true;
+                                pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i-1));
+                            }
                         }
 
                         if(i-1 >= 0 && j-1 >=0){
@@ -232,6 +244,10 @@ class State
                                 surround = true;
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i-1));           
                             }
+                            else if(board[i-1][j-1] == Black){
+                                //surround = true;
+                                pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i-1));
+                            }
                         }
 
                         if(j+1 < M){
@@ -240,7 +256,7 @@ class State
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
                             }
                             else if(board[i][j+1] == Black){
-                                surround = true;
+                                //surround = true;
                                 pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
                             }
                         }
@@ -251,7 +267,7 @@ class State
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i));           
                             }
                             else if(board[i][j-1] == Black){
-                                surround = true;
+                                //surround = true;
                                 pawn_town_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j-1) + " " + to_string(i));           
                             }
                         }
@@ -539,7 +555,6 @@ class State
                 if(board[i][j] == 'B'){
                     BlackTownHall++;
                 }
-
             }
         }    
         */  
