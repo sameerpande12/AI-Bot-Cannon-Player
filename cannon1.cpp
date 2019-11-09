@@ -19,6 +19,7 @@ float directionWeight=10;
 float cannonWeight=10;
 float townHallWeight=1000;
 
+int maxDepth=5;
 
 class State
 {
@@ -560,7 +561,7 @@ class State
         
         float value;
         string bestMove = "";
-        if(depth == 5)
+        if(depth == maxDepth)
             return pair<float,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
@@ -755,7 +756,9 @@ int main(int argc, char *argv[])
     cin >> M;
     cin >> N;
     cin >> timeleft;
-    
+    timeleft = 0.92 * timeleft;// to account for error in time measurement
+
+    maxDepth = 5;
     State s(M,N,false);
     if(white == 2)
         MyPlayerIsWhite = true;
@@ -805,9 +808,22 @@ int main(int argc, char *argv[])
 
     while(true)
     {
-        
+        clock_t begin = clock();
         pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0);  
         string move = pruned_state.second;
+        s.MakeMove(move);
+
+        S = move.at(0);
+        X = move.at(2);
+        Y = move.at(4);
+        Mo = move.at(6);
+        Xt = move.at(8);
+        Yt = move.at(10);
+        cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
+        
+        clock_t end = clock();
+        timeleft = timeleft - (end - begin)/CLOCKS_PER_SEC;
+
         float backed_up_value = pruned_state.first;
         float initial_value = s.evaluate();
         float delta = backed_up_value - initial_value ;
@@ -834,16 +850,8 @@ int main(int argc, char *argv[])
         outfile.open("weights1.txt",std::ios_base::app);
         outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
         outfile.close();
-        s.MakeMove(move);
         
 
-        S = move.at(0);
-        X = move.at(2);
-        Y = move.at(4);
-        Mo = move.at(6);
-        Xt = move.at(8);
-        Yt = move.at(10);
-        cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
         
         s.isWhite = !s.isWhite;
 
