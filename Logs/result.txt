@@ -42,3 +42,12 @@
 42:Static, Score 6.03 4.01 4.01 6.03
 43:Static, Score 6.01 4.04 4.01 6.03
 44:Static, Score 8.02 2.04 0.01 10.04
+45:Static, Score 0.04 10.04 10.04 0.04
+46:Dynamic, Score 10.06 0.03 6.02 4.01
+47:Static, Score 5.06 5.07 5.07 5.06
+48:Static, Score 4.0 6.06 6.06 4.0
+49:Static, Score 4.01 6.04 6.04 4.01
+50:Static, Score 6.02 4.01 4.01 6.02
+51:Static, Score 8.08 2.0 2.0 8.08
+52:Dynamic, Score 8.08 2.0 2.0 8.07
+53:Static, Score 6.01 4.06 4.06 6.01
