@@ -560,7 +560,7 @@ class State
         
         float value;
         string bestMove = "";
-        if(depth == 4)
+        if(depth == 5)
             return pair<float,string>(evaluate(),bestMove);
         vector<string> children = Moves();
         if(children.size()==0)
