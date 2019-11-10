@@ -19,7 +19,8 @@ float pawnWeight=1;
 float directionWeight=10;
 float cannonWeight=10;
 float townHallWeight=1000;
-
+float timeleft;
+// int maxDepth=5;
 
 class State
 {
@@ -615,7 +616,7 @@ class State
     }
 
     
-    pair<int,pair<float,string> > AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth){
+    pair<int,pair<float,string> > AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth,int maxDepth){
         countNode++;
         //cout << depth << "\n";
         
@@ -646,8 +647,20 @@ class State
         }
 
         
-        if(M==10 && N==10)
-            limit_depth--;
+        // if(M==10 && N==10)
+        //     limit_depth--;
+        // if(M==10 && N==10 && timeleft < 40){
+        //     limit_depth = 5;
+        // }
+        // if(M==10 && N==10 && timeleft < 25){
+        //     limit_depth = 4;
+        // }
+        // if(M==10 && N==10 && timeleft < 13){
+        //     limit_depth = 3;
+        // }
+
+        // if(M==8 || N==8 && timeleft < 8)limit_depth=3;
+        // else if(M==8 || N==8 && timeleft <)
 
         // if(!MyPlayerIsWhite && BlackPawn <= 3*N/4+1){
         //     limit_depth = 6;
@@ -656,7 +669,7 @@ class State
         //     limit_depth = 7;
         // }
 
-        if(depth == limit_depth)
+        if(depth >= limit_depth)
             return pair<int,pair<float,string> >(depth,pair<float,string>(evaluate(),bestMove));
         
         string ss = Encode() + to_string(maximizingPlayer);
@@ -693,7 +706,7 @@ class State
                 State* s = new State(M,N, !isWhite);
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
-                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,false,depth+1);
+                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,false,depth+1,maxDepth);
                 float current = alpha_beta.second.first;
                 int cutoff_Depth = alpha_beta.first;
                 current = current - 0.001*cutoff_Depth;
@@ -728,7 +741,7 @@ class State
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
                 
-                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,true,depth+1);
+                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,true,depth+1,maxDepth);
                 float current = alpha_beta.second.first;
                 int cutoff_Depth = alpha_beta.first;
                 current = current - 0.001*cutoff_Depth;
@@ -947,14 +960,14 @@ int main(int argc, char *argv[])
     int M;
     int N;
     int white;
-    float timeleft;
+    
     cin >> white;
     cin >> M;
     cin >> N;
     cin >> timeleft;
     timeleft = 0.92 * timeleft;// to account for error in time measurement
 
-    
+    // maxDepth = 5;
     State s(M,N,false);
     if(white == 2)
         MyPlayerIsWhite = true;
@@ -1012,19 +1025,22 @@ int main(int argc, char *argv[])
 
     float learning_rate = 0;
 
+    
+    
     learning_rate=0;
     pawnWeight=1;
-    directionWeight=9.73692;
+    directionWeight=9.73962;
     cannonWeight=11.7;
     townHallWeight=1010.31;
 
-    
+
+    int maxDepth = 4;
     int mymoves = 0;
     while(true)
     {
         if(mymoves >= 0){
             clock_t begin = clock();
-            pair<float,string> pruned_state =(s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0)).second;  
+            pair<float,string> pruned_state =(s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,maxDepth)).second;  
             string move = pruned_state.second;
             s.MakeMove(move);
 
