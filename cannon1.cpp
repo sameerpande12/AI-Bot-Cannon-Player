@@ -158,7 +158,7 @@ class State
                             }
                         }
 
-                        if(j+1 < M){
+                        if(j+1 < N){
                             if(board[i][j+1] == black){
                                 surround = true;
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
@@ -250,7 +250,7 @@ class State
                             }
                         }
 
-                        if(j+1 < M){
+                        if(j+1 < N){
                             if(board[i][j+1] == black){
                                 surround = true;
                                 pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
@@ -832,12 +832,18 @@ int main(int argc, char *argv[])
     outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
     outfile.close();
 
-    int maxDepth = 4;
+    int maxDepth = 5;
     int mymoves = 0;
     while(true)
     {
         if(mymoves >= 0){
             clock_t begin = clock();
+            // if(MyPlayerIsWhite && s.WhitePawn<=5){
+            //     maxDepth = 6;
+            // }
+            // if(!MyPlayerIsWhite && s.BlackPawn<=5){
+            //     maxDepth = 6;
+            // }
             pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,maxDepth);  
             string move = pruned_state.second;
             s.MakeMove(move);

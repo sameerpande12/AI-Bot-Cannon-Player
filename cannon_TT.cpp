@@ -157,7 +157,7 @@ class State
                                 }
                             }
 
-                            if(j+1 < M){
+                            if(j+1 < N){
                                 if(board[i][j+1] == black){
                                     surround = true;
                                     pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           
@@ -249,7 +249,7 @@ class State
                                 }
                             }
 
-                            if(j+1 < M){
+                            if(j+1 < N){
                                 if(board[i][j+1] == black){
                                     surround = true;
                                     pawn_kills.push_back("S " + to_string(j) + " " + to_string(i) + " M " + to_string(j+1) + " " + to_string(i));           

@@ -12,14 +12,8 @@
 using namespace std;
 bool MyPlayerIsWhite;
 long countNode = 0;
-unordered_map<string, pair<int,pair<float,string> > > Transposition;
 
-
-float pawnWeight=1;
-float directionWeight=10;
-float cannonWeight=10;
-float townHallWeight=1000;
-
+int movecount = 0;
 // int maxDepth=5;
 
 class State
@@ -40,9 +34,6 @@ class State
     int maxTownHalls;
     int blockedWhitePawn;
     int blockedBlackPawn;
-
-    int dangerForWhiteTownHall;
-    int dangerForBlackTownHall;
         
     State(int Mm, int Nn, bool isW)
     {
@@ -62,8 +53,6 @@ class State
         blockedBlackPawn=0;
         blockedBlackPawn=0;
         isWhite = isW;
-        dangerForBlackTownHall = 0;
-        dangerForWhiteTownHall = 0;
         maxTownHalls = board[0].size()/2;
     }
 
@@ -91,7 +80,7 @@ class State
         MakeMove(move);
     }
 
-    pair<vector<string>,string > Moves(){
+    vector<string> Moves(){
         vector<string> pawn_moves;
         vector<string> pawn_kills;
         vector<string> pawn_town_kills;
@@ -99,7 +88,7 @@ class State
         vector<string> cannon_shots;
         vector<string> cannon_blank_shots;
         vector<string> cannon_town_shots;
-        string req = "";
+
         char white = 'w';
         char White = 'W';
         char black = 'b';
@@ -113,9 +102,12 @@ class State
         }
         bool surround = false;
         
-        for(int i = 0;i<M;i++){
-            for(int j = 0;j<N;j++){
-                req = req + board[i][j];
+        if(BlackTownHall<=(maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || ( !isWhite && (BlackPawn-blockedBlackPawn)==0) ||  ( isWhite && (WhitePawn-blockedWhitePawn)== 0)){
+            cannon_town_shots.clear();
+            return cannon_town_shots;
+        }
+        for(int i = 0;i<board.size();i++){
+            for(int j = 0;j<board[0].size();j++){
                 if(board[i][j] == white){
                     surround = false;
                     if(isWhite){
@@ -336,7 +328,7 @@ class State
                                     cannon_town_shots.push_back("S " + to_string(j) + " " + to_string(i) + " B " + to_string(j) + " " + to_string(i-3));
                                 else if(board[i-3][j] == ' ')
                                     cannon_blank_shots.push_back("S " + to_string(j) + " " + to_string(i) + " B " + to_string(j) + " " + to_string(i-3));
-
+ 
                             }
                             if(i-4 >=0){
                                 if(board[i-4][j] == black)
@@ -499,11 +491,6 @@ class State
             }
             
         }
-
-        if(BlackTownHall<=(maxTownHalls-2) || WhiteTownHall<=(maxTownHalls-2) || ( !isWhite && (BlackPawn-blockedBlackPawn)==0) ||  ( isWhite && (WhitePawn-blockedWhitePawn)== 0)){
-            cannon_town_shots.clear();
-            return pair<vector<string>, string>(cannon_town_shots,req);
-        }
         cannon_town_shots.insert(cannon_town_shots.end(), pawn_town_kills.begin(), pawn_town_kills.end());
         cannon_town_shots.insert(cannon_town_shots.end(), cannon_shots.begin(), cannon_shots.end());
         cannon_town_shots.insert(cannon_town_shots.end(), cannon_moves.begin(), cannon_moves.end());
@@ -513,8 +500,7 @@ class State
         cannon_town_shots.insert(cannon_town_shots.end(), cannon_blank_shots.begin(), cannon_blank_shots.end());
         //std::random_shuffle ( cannon_town_shots.begin(), cannon_town_shots.end() );
         //cout << cannon_town_shots.size() << "\n";
-        
-        return pair<vector<string>, string >(cannon_town_shots, req);
+        return cannon_town_shots;
     }
     void MakeMove(string s){
         WhitePawn = 0;
@@ -530,43 +516,7 @@ class State
         else{
             board[(int)s.at(10) - 48][(int)s.at(8) - 48] = ' ';
         }  
-        updateCounts();
-        /*
-        for(int i = 0;i<board.size();i++)
-        {
-            for(int j = 0;j<board[0].size();j++)
-            {
-                if(board[i][j] == 'w'){
-                    WhitePawn++;
-                    if(i-1>=0 && i+1 < M && board[i-1][j] == 'w' && board[i+1][j] == 'w')
-                        WhiteCannon++;
-                    if(j-1>=0 && j+1 < N && board[i][j-1] == 'w' && board[i][j+1] == 'w')
-                        WhiteCannon++;
-                    if(i-1>=0 && i+1 < M && j-1>=0 && j+1 < N && board[i-1][j-1] == 'w' && board[i+1][j+1] == 'w')
-                        WhiteCannon++;
-                    if(i-1>=0 && i+1 < M && j-1>=0 && j+1 < N && board[i-1][j+1] == 'w' && board[i+1][j-1] == 'w')
-                        WhiteCannon++;
-                }
-                if(board[i][j] == 'b'){
-                    BlackPawn++;
-                    if(i-1>=0 && i+1 < M && board[i-1][j] == 'b' && board[i+1][j] == 'b')
-                        BlackCannon++;
-                    if(j-1>=0 && j+1 < N && board[i][j-1] == 'b' && board[i][j+1] == 'b')
-                        BlackCannon++;
-                    if(i-1>=0 && i+1 < M && j-1>=0 && j+1 < N && board[i-1][j-1] == 'b' && board[i+1][j+1] == 'b')
-                        BlackCannon++;
-                    if(i-1>=0 && i+1 < M && j-1>=0 && j+1 < N && board[i-1][j+1] == 'b' && board[i+1][j-1] == 'b')
-                        BlackCannon++;
-                }
-                if(board[i][j] == 'W'){
-                    WhiteTownHall++;
-                }
-                if(board[i][j] == 'B'){
-                    BlackTownHall++;
-                }
-            }
-        }    
-        */  
+        updateCounts();  
     }
 
     string printBoard(){
@@ -583,55 +533,13 @@ class State
     pair<float,string> AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth,int maxDepth){
         countNode++;
         
-        /*float value;
+        float value;
         string bestMove = "";
         if(depth == maxDepth)
             return pair<float,string>(evaluate(),bestMove);
-        pair<vector<string>,string > children = Moves();
+        vector<string> children = Moves();
         if(children.size()==0)
             return pair<float,string>(evaluate(),bestMove);
-        */
-        float value;
-        string bestMove = "";
-        
-        int limit_depth = 5;
-        if(MyPlayerIsWhite && WhitePawn <= 3*N/4+2){
-            limit_depth = 6;
-        }
-        if(MyPlayerIsWhite && WhitePawn <= 3*N/4-1){
-            limit_depth = 7;
-        }
-
-        // if(!MyPlayerIsWhite && BlackPawn <= 3*N/4+1){
-        //     limit_depth = 6;
-        // }
-        // if(!MyPlayerIsWhite && BlackPawn <= 3*N/4-1){
-        //     limit_depth = 7;
-        // }
-
-        if(depth == limit_depth)
-            return pair<float,string>(evaluate(),bestMove);
-        
-        string ss = Encode() + to_string(maximizingPlayer);
-
-        auto p = Transposition.find(ss);
-        //cout << typeid(p).name() << endl;
-        if(p != Transposition.end()){
-            //cout << Transposition.find(board)->second.first.second << " " << depth << "\n";
-           
-            if(p->second.first >= (limit_depth -depth)){
-                //cout << Transposition.find(board)->second.first.second << " " << depth << "\n";
-                //cout << to_string(p->second.first.first == maximizingPlayer) << "\n";
-                //cout << to_string(p->second.first) << " " << limit_depth -depth << "\n";
-                return p->second.second;
-            }
-        }
-        pair<vector<string>,string> moves = Moves();
-        vector<string> children = moves.first;
-        string req = moves.second + to_string(maximizingPlayer);
-        if(children.size()==0)
-            return pair<float,string>(evaluate(),bestMove);
-
         if(maximizingPlayer)
         {
             float value = (float)INT32_MIN;
@@ -654,13 +562,7 @@ class State
                 }
                 delete s;
             }
-            pair<float,string> a (value,bestMove);
-            //pair<bool,int> c (maximizingPlayer,limit_depth-depth);
-            pair<int,pair<float,string> > d (limit_depth-depth,a);
-            pair<string, pair<int,pair<float,string> > > b (req,d);
-            Transposition.insert(b);
-            return a;
-            //return pair<float,string>(value,bestMove);
+            return pair<float,string>(value,bestMove);
         }
         else
         {
@@ -684,13 +586,7 @@ class State
                 }
                 delete s;
             }
-            pair<float,string> a (value,bestMove);
-            //pair<bool,int> c (maximizingPlayer,limit_depth-depth);
-            pair<int,pair<float,string> > d (limit_depth-depth,a);
-            pair<string, pair<int,pair<float,string> > > b (req,d);
-            Transposition.insert(b);
-            return a;
-            //return pair<float,string>(value,bestMove);
+            return pair<float,string>(value,bestMove);
         }
     }
     void updateCounts(){
@@ -710,12 +606,6 @@ class State
             {
                 if(board[i][j] == 'w'){
                     WhitePawn++;
-                    if(i==M-2){
-                        if(j+1<N && board[i+1][j+1]=='B')dangerForBlackTownHall++;
-                        if(board[i+1][j]=='B')dangerForBlackTownHall++;
-                        if(j-1>=0 && board[i+1][j-1])dangerForBlackTownHall++;
-                    }
-
                     White_directionality += i;
                     if(i-1>=0 && i+1 < M && board[i-1][j] == 'w' && board[i+1][j] == 'w')
                         WhiteCannon++;
@@ -756,11 +646,6 @@ class State
                 }
                 if(board[i][j] == 'b'){
                     BlackPawn++;
-                    if(i==1){
-                        if(j-1>=0 && board[0][j-1]=='W')dangerForWhiteTownHall++;
-                        if(j+1<N && board[0][j+1]=='W')dangerForWhiteTownHall++;
-                        if(board[0][j]=='W')dangerForWhiteTownHall++;
-                    }
                     Black_directionality +=( board.size()-1 - i);
                     if(i-1>=0 && i+1 < M && board[i-1][j] == 'b' && board[i+1][j] == 'b')
                         BlackCannon++;
@@ -804,48 +689,60 @@ class State
 
         
     }
-    string Encode(){
-        string s = "";
-        for(int i= 0;i<M;i++)
-            for(int j =0;j<N;j++)
-                s = s + board[i][j];
-        return s;
-    }
     float evaluate(){
-        
-          
-        // if(WhiteTownHall <=2 && !MyPlayerIsWhite)
-        //     return INT32_MAX/2;
-        // if(BlackTownHall <=2 && MyPlayerIsWhite)
-        //     return INT32_MAX/2;
-        // if(WhiteTownHall <=2 && MyPlayerIsWhite)
-        //     return -INT32_MIN/2;
-        // if(BlackTownHall <=2 && !MyPlayerIsWhite)
-        //     return -INT32_MIN/2;
 
         //if you are in a losing situation then you might want to have a draw 
         //if you are in a winning situation you might want to avoid a draw
 
         // if going forward means you are going to kill yourself then you don't want to do it right ? 
         if(WhiteTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
-            return townHallWeight * 4;
+            return  10000;
         
         if( BlackTownHall <= maxTownHalls-2 && MyPlayerIsWhite)
-            return townHallWeight * 4;
+            return 10000;
         
         if(WhiteTownHall <= maxTownHalls -2 && MyPlayerIsWhite)
-            return -townHallWeight* 4;
+            return -10000;
         if( BlackTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
-            return -townHallWeight * 4;
-            
+            return -10000;
 
-        float a = (WhitePawn - BlackPawn) + directionWeight*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
-            + cannonWeight*(WhiteCannon - BlackCannon)
-            + townHallWeight*(WhiteTownHall - BlackTownHall);
+        float b_pawnWeight=1;
+        float b_directionWeight=9.7;
+        float b_cannonWeight=11.3;
+        float b_townHallWeight=1000;    
+
+        float w_pawnWeight = 1;
+        float w_directionWeight = 9.7;
+        float w_cannonWeight=11.3;
+        float w_townHallWeight = 1000;
+        if(movecount < 0 && MyPlayerIsWhite){
+            w_pawnWeight = 10;
+            w_cannonWeight = 70;
+            w_directionWeight = 0;
+
+            b_pawnWeight = 20;
+            b_cannonWeight = 70;
+            b_directionWeight = 10;
+        }
+        else if(movecount < 0 && !MyPlayerIsWhite){
+            b_pawnWeight = 10;
+            b_cannonWeight = 50;
+            b_directionWeight = 0;
+
+            w_pawnWeight = 20;
+            w_cannonWeight = 70;
+            w_directionWeight = 10;
+
+        }
+
+        float white_score = w_pawnWeight * WhitePawn + w_directionWeight * WhitePawn * White_directionality + w_cannonWeight * WhiteCannon + w_townHallWeight *WhiteTownHall;
+        float brown_score = b_pawnWeight * BlackPawn + b_directionWeight * BlackPawn * Black_directionality + b_cannonWeight * BlackCannon + b_townHallWeight* BlackTownHall;
+        float a = white_score - brown_score;
+
         if(MyPlayerIsWhite)
-            return a - 80*dangerForWhiteTownHall;
+            return a;
         else
-            return (-a) - 80 * dangerForBlackTownHall;
+            return (-a);
         
 
     }
@@ -897,78 +794,38 @@ int main(int argc, char *argv[])
     float isWhite = 1;
     if(!MyPlayerIsWhite)isWhite = -1;
 
-    float learning_rate = 0;
-
-    ifstream paramFile;
-    paramFile.open("param1.txt");
-    paramFile>>learning_rate;
-    paramFile>>pawnWeight;
-    paramFile>>directionWeight;
-    paramFile>>cannonWeight;
-    paramFile>>townHallWeight;
-
-
-    ofstream outfile;
-    outfile.open("weights1.txt");
-    outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
-    outfile.close();
-
-    int maxDepth = 4;
-    int mymoves = 0;
+    int maxDepth = 5;
+    int movecount = 0;
     while(true)
     {
-        if(mymoves >= 0){
-            clock_t begin = clock();
+        string move;
+        clock_t begin = clock();
+        if(movecount>=1){
             pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,maxDepth);  
-            string move = pruned_state.second;
-            s.MakeMove(move);
-
-            S = move.at(0);
-            X = move.at(2);
-            Y = move.at(4);
-            Mo = move.at(6);
-            Xt = move.at(8);
-            Yt = move.at(10);
-            cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
-            
-            clock_t end = clock();
-            timeleft = timeleft - (end - begin)/CLOCKS_PER_SEC;
-
-            float backed_up_value = pruned_state.first;
-            float initial_value = s.evaluate();
-            float delta = backed_up_value - initial_value ;
-            
-
-            float delta_sign = 1;
-            if(delta < 0)delta_sign = -1;
-            pawnWeight = pawnWeight + delta_sign * learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
-            cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
-            directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
-            // townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
-            outfile.open("weights1.txt",std::ios_base::app);
-            outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
-            outfile.close();
+            move = pruned_state.second;
         }
         else{
-            string move;
             if(MyPlayerIsWhite){
-                if(mymoves==0)
-                    move = "S "+to_string(N-3)+" 0 M "+to_string(N-2)+" 1\n";
-                else
-                    move = "S 3 0 M 2 1\n";
+                move = "S 3 0 M 4 1";
             }
             else{
-                if(mymoves == 0)
-                    move = "S 2 "+to_string(M-1)+" M 1 "+to_string(M-2)+"\n";
-                else
-                    move = "S "+to_string(N-4)+" "+to_string(M-1) + " M "+to_string(N-3)+" "+to_string(M-2)+"\n";
+                move = "S 4 "+to_string(M-1)+" M 3 "+to_string(M-2);
             }
-            mymoves++;
-            s.MakeMove(move);
-            cout<<move;
 
         }
+        s.MakeMove(move);
+        movecount++;
 
+        S = move.at(0);
+        X = move.at(2);
+        Y = move.at(4);
+        Mo = move.at(6);
+        Xt = move.at(8);
+        Yt = move.at(10);
+        cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
+        
+        clock_t end = clock();
+        timeleft = timeleft - (end - begin)/CLOCKS_PER_SEC;
         
         s.isWhite = !s.isWhite;
 
