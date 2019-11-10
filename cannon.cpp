@@ -693,7 +693,7 @@ class State
         vector<string> children = moves.first;
         string req = moves.second + to_string(maximizingPlayer);
         if(children.size()==0){
-            if(depth != 5)
+            
                 //cout << depth <<"\n";
             return pair<int,pair<float,string> >(depth, pair<float,string>(evaluate(),bestMove));
         }
