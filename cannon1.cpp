@@ -20,7 +20,6 @@ float directionWeight=10;
 float cannonWeight=10;
 float townHallWeight=1000;
 
-// int maxDepth=5;
 
 class State
 {
@@ -616,7 +615,7 @@ class State
     }
 
     
-    pair<int,pair<float,string> > AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth,int maxDepth){
+    pair<int,pair<float,string> > AlphaBetaPrune(float alpha, float beta, bool maximizingPlayer, int depth){
         countNode++;
         //cout << depth << "\n";
         
@@ -685,7 +684,7 @@ class State
                 State* s = new State(M,N, !isWhite);
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
-                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,false,depth+1,maxDepth);
+                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,false,depth+1);
                 float current = alpha_beta.second.first;
                 int cutoff_Depth = alpha_beta.first;
                 current = current - 0.001*cutoff_Depth;
@@ -720,7 +719,7 @@ class State
                 (*s).Copy(board,children[i]);
                 //bestMove = children[i];
                 
-                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,true,depth+1,maxDepth);
+                pair<int,pair<float,string> > alpha_beta = (*s).AlphaBetaPrune(alpha, beta,true,depth+1);
                 float current = alpha_beta.second.first;
                 int cutoff_Depth = alpha_beta.first;
                 current = current - 0.001*cutoff_Depth;
@@ -946,7 +945,7 @@ int main(int argc, char *argv[])
     cin >> timeleft;
     timeleft = 0.92 * timeleft;// to account for error in time measurement
 
-    // maxDepth = 5;
+    
     State s(M,N,false);
     if(white == 2)
         MyPlayerIsWhite = true;
@@ -1018,13 +1017,13 @@ int main(int argc, char *argv[])
     outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
     outfile.close();
 
-    int maxDepth = 4;
+    
     int mymoves = 0;
     while(true)
     {
         if(mymoves >= 0){
             clock_t begin = clock();
-            pair<float,string> pruned_state =(s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,maxDepth)).second;  
+            pair<float,string> pruned_state =(s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0)).second;  
             string move = pruned_state.second;
             s.MakeMove(move);
 
