@@ -632,7 +632,7 @@ class State
         float value;
         string bestMove = "";
         int limit_depth=4;
-        if(M==8 || N==8){
+        if(M==8 && N==8){
              limit_depth = 5;
             if(MyPlayerIsWhite && WhitePawn <= 7){
                 limit_depth = 6;
@@ -653,6 +653,16 @@ class State
             if(timeleft < 25){
                 limit_depth = 4;
             }
+        }
+        if(M==10 || N==10){
+            limit_depth = 5;
+            if(timeleft < 70){
+                limit_depth = 4;
+            }
+            if(timeleft < 55){
+                limit_depth = 3;
+            }
+            
         }
         if(M==10 && N==10){
             limit_depth = 4;
