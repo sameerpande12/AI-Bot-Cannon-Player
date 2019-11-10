@@ -540,7 +540,12 @@ class State
         
         cannon_town_shots.insert(cannon_town_shots.end(), pawn_kills.begin(), pawn_kills.end());
         cannon_town_shots.insert(cannon_town_shots.end(), pawn_moves.begin(), pawn_moves.end());
-        cannon_town_shots.insert(cannon_town_shots.end(), cannon_blank_shots.begin(), cannon_blank_shots.end());
+        
+        int mytownhalls = WhiteTownHall;
+        if(!MyPlayerIsWhite)mytownhalls = BlackTownHall;
+        int opptownhalls = BlackTownHall;
+        if(!MyPlayerIsWhite)opptownhalls = WhiteTownHall; 
+        if(evaluate() < evaluateOpponent() && (mytownhalls < opptownhalls))cannon_town_shots.insert(cannon_town_shots.end(), cannon_blank_shots.begin(), cannon_blank_shots.end());
         //std::random_shuffle ( cannon_town_shots.begin(), cannon_town_shots.end() );
         //cout << cannon_town_shots.size() << "\n";
         
@@ -633,6 +638,8 @@ class State
         if(MyPlayerIsWhite && WhitePawn <= 3*N/4-1){
             limit_depth = 7;
         }
+        if(M==10 && N==10)
+            limit_depth--;
 
         // if(!MyPlayerIsWhite && BlackPawn <= 3*N/4+1){
         //     limit_depth = 6;
@@ -892,6 +899,34 @@ class State
             return a - 80*dangerForWhiteTownHall;
         else
             return (-a) - 80 * dangerForBlackTownHall;
+        
+
+    }
+
+    float evaluateOpponent(){
+        
+          
+        if(WhiteTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
+            return townHallWeight * 4;
+        
+        if( BlackTownHall <= maxTownHalls-2 && MyPlayerIsWhite)
+            return townHallWeight * 4;
+        
+        if(WhiteTownHall <= maxTownHalls -2 && MyPlayerIsWhite)
+            return -townHallWeight* 4;
+        if( BlackTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
+            return -townHallWeight * 4;
+            
+
+        float a = (WhitePawn - BlackPawn) + directionWeight*((WhitePawn * White_directionality - BlackPawn *Black_directionality)) 
+            + cannonWeight*(WhiteCannon - BlackCannon)
+            + townHallWeight*(WhiteTownHall - BlackTownHall);
+        if(MyPlayerIsWhite)//then evaluate for black
+            return (-a) - 80 * dangerForBlackTownHall;
+        else//evaluate for white
+            return a - 80*dangerForWhiteTownHall;
+        
+            
         
 
     }
