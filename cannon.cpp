@@ -544,7 +544,7 @@ class State
         if(!MyPlayerIsWhite)mytownhalls = BlackTownHall;
         int opptownhalls = BlackTownHall;
         if(!MyPlayerIsWhite)opptownhalls = WhiteTownHall; 
-        if(evaluate() < evaluateOpponent() && (mytownhalls < opptownhalls))cannon_town_shots.insert(cannon_town_shots.end(), cannon_blank_shots.begin(), cannon_blank_shots.end());
+        cannon_town_shots.insert(cannon_town_shots.end(), cannon_blank_shots.begin(), cannon_blank_shots.end());
         //std::random_shuffle ( cannon_town_shots.begin(), cannon_town_shots.end() );
         //cout << cannon_town_shots.size() << "\n";
         
