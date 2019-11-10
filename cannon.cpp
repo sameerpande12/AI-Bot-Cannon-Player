@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <random>
 #include <fstream>
+#include <chrono>
 
 using namespace std;
 bool MyPlayerIsWhite;
@@ -631,19 +632,50 @@ class State
         float value;
         string bestMove = "";
         
-        int limit_depth = 5;
-        if(MyPlayerIsWhite && WhitePawn <= 3*N/4+2){
-            limit_depth = 6;
-        }
-        if(MyPlayerIsWhite && WhitePawn <= 3*N/4-1){
-            limit_depth = 7;
-        }
+        if(M==8 || N==8){
+            int limit_depth = 5;
+            if(MyPlayerIsWhite && WhitePawn <= 7){
+                limit_depth = 6;
+            }
+            if(MyPlayerIsWhite && WhitePawn <= 4){
+                limit_depth = 7;
+            }
 
-        if(!MyPlayerIsWhite && BlackPawn <= 3*N/4+2){
-            limit_depth = 6;
+            if(!MyPlayerIsWhite && BlackPawn <= 7){
+                limit_depth = 6;
+            }
+            if(!MyPlayerIsWhite && BlackPawn <= 4){
+                limit_depth = 7;
+            }
+            if(timeleft < 35){
+                limit_depth = 5;
+            }
+            if(timeleft < 25){
+                limit_depth = 4;
+            }
         }
-        if(!MyPlayerIsWhite && BlackPawn <= 3*N/4 -1){
-            limit_depth = 7;
+        if(M==10 && N==10){
+            int limit_depth = 4;
+            if(MyPlayerIsWhite && WhitePawn <= 7){
+                limit_depth = 5;
+            }
+            if(MyPlayerIsWhite && WhitePawn <= 4 && timeleft > 40){
+                limit_depth = 6;
+            }
+
+            if(!MyPlayerIsWhite && BlackPawn <= 7){
+                limit_depth = 5;
+            }
+            if(!MyPlayerIsWhite && BlackPawn <= 4 && timeleft > 40){
+                limit_depth = 6;
+            }
+
+            if(timeleft < 50){
+                limit_depth = 5;
+            }
+            if(timeleft < 40){
+                limit_depth = 4;
+            }
         }
 
         
@@ -965,7 +997,7 @@ int main(int argc, char *argv[])
     cin >> M;
     cin >> N;
     cin >> timeleft;
-    timeleft = 0.92 * timeleft;// to account for error in time measurement
+    timeleft = timeleft;// to account for error in time measurement
 
     // maxDepth = 5;
     State s(M,N,false);
@@ -975,29 +1007,6 @@ int main(int argc, char *argv[])
         MyPlayerIsWhite = false;
     
     s.Initialise();
-    /*
-    s.Initialise2();
-    s.isWhite = true;
-    pair<vector<string>,string> moves = s.Moves();
-    vector<string> children = moves.first;
-    float value = (float)INT32_MIN;
-    cout << "Current: " << s.evaluate() <<"\n";
-    for(int i = 0;i<children.size();i++)
-    {
-        countNode = 0;
-        State* spri = new State(M,N, !s.isWhite);
-        (*spri).Copy(s.board,children[i]);
-        //bestMove = children[i];
-        pair<int,pair<float,string> > alpha_beta = (*spri).AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,false,1,4);
-        float current = alpha_beta.second.first;
-        
-        cout << current << " " << children[i] <<"\n";
-    }
-    //pair<float,string> pruned_state =s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,4);  
-    //for(int i =0;i<)
-    //cout << pruned_state.second << "\n";
-    //cout << pruned_state.first << "\n";
-           */ 
 
     int myPawns = 3 * s.BlackTownHall;
     string S;
@@ -1033,13 +1042,15 @@ int main(int argc, char *argv[])
     cannonWeight=11.7;
     townHallWeight=1010.31;
 
-
+    // ofstream file;
+    // file.open("time.txt");
     int maxDepth = 4;
     int mymoves = 0;
     while(true)
     {
-        if(mymoves >= 0){
-            clock_t begin = clock();
+            //clock_t begin,end;
+            std::chrono::time_point<std::chrono::system_clock> begin = std::chrono::system_clock::now();
+            //begin = clock();
             pair<float,string> pruned_state =(s.AlphaBetaPrune((float)INT32_MIN,(float)INT32_MAX,true,0,maxDepth)).second;  
             string move = pruned_state.second;
             s.MakeMove(move);
@@ -1052,32 +1063,14 @@ int main(int argc, char *argv[])
             Yt = move.at(10);
             cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
             
-            clock_t end = clock();
-            timeleft = timeleft - (end - begin)/CLOCKS_PER_SEC;
-        }
-        else{
-            string move;
-            if(MyPlayerIsWhite){
-                if(mymoves==0)
-                    move = "S "+to_string(N-3)+" 0 M "+to_string(N-2)+" 1\n";
-                else
-                    move = "S 3 0 M 2 1\n";
-            }
-            else{
-                if(mymoves == 0)
-                    move = "S 2 "+to_string(M-1)+" M 1 "+to_string(M-2)+"\n";
-                else
-                    move = "S "+to_string(N-4)+" "+to_string(M-1) + " M "+to_string(N-3)+" "+to_string(M-2)+"\n";
-            }
-            mymoves++;
-            s.MakeMove(move);
-            cout<<move;
-
-        }
+            // end = clock();
+             std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+            timeleft = timeleft - ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - begin)).count())/1000;
+            // file<<timeleft<<endl;
 
         
         s.isWhite = !s.isWhite;
-
+        begin = std::chrono::system_clock::now();
         cin >> S;
         cin >> X;
         cin >> Y;
@@ -1086,8 +1079,8 @@ int main(int argc, char *argv[])
         cin >> Yt;
         s.MakeMove(S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt);
         s.isWhite = !s.isWhite;
-        
-        
+        begin = std::chrono::system_clock::now();
+        timeleft = timeleft - ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - begin)).count())/1000;
     }
     // outfile.close();
     
