@@ -900,7 +900,7 @@ int main(int argc, char *argv[])
     float learning_rate = 0;
 
     ifstream paramFile;
-    paramFile.open("param1.txt");
+    paramFile.open("param2.txt");
     paramFile>>learning_rate;
     paramFile>>pawnWeight;
     paramFile>>directionWeight;
@@ -909,7 +909,7 @@ int main(int argc, char *argv[])
 
 
     ofstream outfile;
-    outfile.open("weights1.txt");
+    outfile.open("weights2.txt");
     outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
     outfile.close();
 
@@ -945,7 +945,7 @@ int main(int argc, char *argv[])
             cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
             directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
             // townHallWeight = townHallWeight + delta_sign * learning_rate * (s.WhiteTownHall - s.BlackTownHall - s.Black_directionality)*isWhite;
-            outfile.open("weights1.txt",std::ios_base::app);
+            outfile.open("weights2.txt",std::ios_base::app);
             outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
             outfile.close();
         }
