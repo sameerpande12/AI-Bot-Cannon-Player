@@ -637,6 +637,15 @@ class State
         if(MyPlayerIsWhite && WhitePawn <= 3*N/4-1){
             limit_depth = 7;
         }
+
+        if(!MyPlayerIsWhite && BlackPawn <= 3*N/4+2){
+            limit_depth = 6;
+        }
+        if(!MyPlayerIsWhite && BlackPawn <= 3*N/4 -1){
+            limit_depth = 7;
+        }
+
+        
         if(M==10 && N==10)
             limit_depth--;
 
@@ -647,7 +656,7 @@ class State
         //     limit_depth = 7;
         // }
 
-        if(depth == limit_depth)
+        if(depth >= limit_depth)
             return pair<int,pair<float,string> >(depth,pair<float,string>(evaluate(),bestMove));
         
         string ss = Encode() + to_string(maximizingPlayer);
