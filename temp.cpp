@@ -858,6 +858,7 @@ class State
         //if you are in a winning situation you might want to avoid a draw
 
         // if going forward means you are going to kill yourself then you don't want to do it right ? 
+        // updateCounts();
         if(WhiteTownHall <= maxTownHalls-2 && !MyPlayerIsWhite)
             return townHallWeight * 4;
         
