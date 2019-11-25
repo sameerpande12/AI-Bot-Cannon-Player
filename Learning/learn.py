@@ -130,7 +130,7 @@ for gameid in range(gameid,gameid + numGames):
     print(command)
     server_process = execute(command)
 
-    command=' python client.py 0.0.0.0 10000 run1.sh '
+    command=' python client.py 0.0.0.0 10000 run1.sh -mode GUI'
     print(command)
     execute(command)
 

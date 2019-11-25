@@ -1045,13 +1045,19 @@ int main(int argc, char *argv[])
     float learning_rate = 0;
 
     
-    
-    learning_rate=0;
-    pawnWeight=1;
-    directionWeight=9.73962;
-    cannonWeight=11.7;
-    townHallWeight=1010.31;
+    ifstream paramFile;
+    paramFile.open("param1.txt");
+    paramFile>>learning_rate;
+    paramFile>>pawnWeight;
+    paramFile>>directionWeight;
+    paramFile>>cannonWeight;
+    paramFile>>townHallWeight;
 
+
+    ofstream outfile;
+    outfile.open("weights1.txt");
+    outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
+    outfile.close();
     // ofstream file;
     // file.open("time.txt");
     int maxDepth = 4;
@@ -1073,6 +1079,21 @@ int main(int argc, char *argv[])
             Yt = move.at(10);
             cout << S+" "+X+ " "+Y+" "+Mo+" "+Xt+" "+Yt <<"\n";
             
+            float backed_up_value = pruned_state.first;
+            float initial_value = s.evaluate();
+            float delta = backed_up_value - initial_value;
+            
+
+            float delta_sign = 1;
+            if(delta < 0)delta_sign = -1;
+            pawnWeight = pawnWeight + delta_sign * learning_rate*(s.WhitePawn - s.BlackPawn)*isWhite;
+            cannonWeight = cannonWeight + delta_sign * learning_rate * (s.WhiteCannon-s.BlackCannon)*isWhite;
+            directionWeight = directionWeight + delta_sign *learning_rate * (s.White_directionality - s.Black_directionality)*isWhite;
+            
+
+            outfile.open("weights1.txt",std::ios_base::app);
+            outfile<<pawnWeight<<" "<<directionWeight<<" "<<cannonWeight<<" "<<townHallWeight<<"\n";
+            outfile.close();
             // end = clock();
              std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
             timeleft = timeleft - ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - begin)).count())/1000;
