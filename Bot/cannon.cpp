@@ -87,35 +87,7 @@ class State
         updateCounts();    
     }
 
-    void Initialise2()
-    {
-        board[0][0] = 'W';
-        board[0][2] = 'W';
-        board[0][4] = 'W';
-        board[0][6] = 'W';
-        board[2][2] = 'w';
-        board[2][3] = 'w';
-        board[3][1] = 'b';
-        board[3][5] = 'b';
-        board[4][3] = 'b';
-        board[4][6] = 'w';
-        board[5][0] = 'b';
-        board[5][2] = 'b';
-        board[5][4] = 'b';
-        board[5][7] = 'w';
-        board[6][0] = 'b';
-        board[6][1] = 'b';
-        board[6][2] = 'b';
-        board[6][5] = 'b';
-        board[6][7] = 'w';
-        board[3][1] = 'w';
-        board[7][1] = 'B';
-        board[7][3] = 'B';
-        board[7][5] = 'B';
-        board[7][7] = 'w';
-        cout << printBoard() << "\n";
-        updateCounts();    
-    }
+    
 
     void Copy(vector<vector<char> > bboard, string move){
         board = bboard;
