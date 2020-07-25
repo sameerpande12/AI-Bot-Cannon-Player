@@ -18,7 +18,7 @@ After the setup steps have been followed as specified, here are the steps to run
     * `cd GameServer`
     *  `python server.py <port> -n <N> -m <M> -NC 2 -TL <TimeLimit> -LOG server.log `
     *  (N,M) values that are supported by server are (8,8), (10,8), (10,10)
-2. Run the player
+2. Run the players ( you have to follow the following procedure twice )
     * `cd GameServer`
     *  `python client.py 0.0.0.0 <port> <playing_bot> -mode GUI`
     * `<playing_bot>` can be the bot placed in Bot repostiory, or a random bot.
