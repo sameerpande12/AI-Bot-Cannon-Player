@@ -22,7 +22,7 @@ After the setup steps have been followed as specified, here are the steps to run
     * `cd GameServer`
     *  `python client.py 0.0.0.0 <port> <playing_bot> -mode GUI`
     * `<playing_bot>` can be the bot placed in Bot repostiory, or a random bot.
-    *  `python client.py 0.0.0.0 <port> ../Bot/run.sh -mode GUI` runs a stronger bot
+    *  `python client.py 0.0.0.0 <port> run.sh -mode GUI` runs our bot
     *  `python client.py 0.0.0.0 <port> RandomPlayer.py -mode GUI` runs a random player
 
 3. In the convention of the game, player 1 is black and black plays first.
